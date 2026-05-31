@@ -1,0 +1,82 @@
+<?php
+
+namespace App\Filament\Resources;
+
+use App\Filament\Resources\AccessGrantResource\Pages;
+use App\Models\AccessGrant;
+use BackedEnum;
+use Filament\Forms;
+use Filament\Forms\Form;
+use Filament\Resources\Resource;
+use Filament\Actions\EditAction;
+use Filament\Tables;
+use Filament\Tables\Table;
+
+class AccessGrantResource extends Resource
+{
+    protected static ?string $model = AccessGrant::class;
+
+    protected static string | BackedEnum | null $navigationIcon = 'heroicon-o-key';
+
+    protected static ?string $navigationLabel = 'صلاحيات الوصول';
+
+    protected static ?string $pluralLabel = 'صلاحيات الوصول';
+
+    protected static ?string $label = 'صلاحية وصول';
+
+    public static function table(Table $table): Table
+    {
+        return $table
+            ->columns([
+                Tables\Columns\TextColumn::make('user.name')
+                    ->label('المستخدم')
+                    ->searchable(),
+                Tables\Columns\TextColumn::make('course.title_ar')
+                    ->label('الكورس')
+                    ->searchable(),
+                Tables\Columns\TextColumn::make('grant_type')
+                    ->label('نوع المنح'),
+                Tables\Columns\TextColumn::make('status')
+                    ->label('الحالة')
+                    ->badge()
+                    ->formatStateUsing(fn ($state) => match ($state) {
+                        'active' => 'نشط',
+                        'expired' => 'منتهي',
+                        'revoked' => 'ملغي',
+                        'cancelled' => 'ملغي',
+                        default => $state,
+                    })
+                    ->color(fn ($state) => match ($state) {
+                        'active' => 'success',
+                        'expired' => 'danger',
+                        'revoked' => 'warning',
+                        default => 'gray',
+                    }),
+                Tables\Columns\TextColumn::make('starts_at')
+                    ->label('تاريخ البداية')
+                    ->dateTime(),
+                Tables\Columns\TextColumn::make('expires_at')
+                    ->label('تاريخ الانتهاء')
+                    ->dateTime(),
+            ])
+            ->filters([
+                Tables\Filters\SelectFilter::make('status')
+                    ->options([
+                        'active' => 'نشط',
+                        'expired' => 'منتهي',
+                        'revoked' => 'ملغي',
+                    ]),
+            ])
+            ->actions([
+                EditAction::make()->label('تعديل'),
+            ]);
+    }
+
+    public static function getPages(): array
+    {
+        return [
+            'index' => Pages\ListAccessGrants::route('/'),
+            'edit' => Pages\EditAccessGrant::route('/{record}/edit'),
+        ];
+    }
+}

@@ -36,4 +36,9 @@ class Skill extends Model
     {
         return $this->hasMany(Question::class);
     }
+
+    public function progress(): HasMany
+    {
+        return $this->hasMany(SkillProgress::class);
+    }
 }

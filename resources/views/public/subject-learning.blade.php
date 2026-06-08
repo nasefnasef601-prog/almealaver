@@ -11,7 +11,7 @@
     $courses = $subject->courses()->where('is_published', true)->with(['modules.lessons', 'lessonCompletions'])->latest()->get();
 
     // Skills (Foundation topics)
-    $skills = $subject->skills()->where('is_active', true)->orderBy('sort_order')->get();
+    $skills = $subject->skills()->where('skills.is_active', true)->orderBy('skills.sort_order')->get();
 
     // Training quizzes (quiz_type = 'training' or 'quiz')
     $trainingQuizzes = Quiz::where('subject_id', $subject->id)->where('is_published', true)

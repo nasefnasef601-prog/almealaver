@@ -27,7 +27,7 @@
             @foreach($subjects as $subject)
                 @php
                     $courseCount = $subject->courses()->where('is_published', true)->count();
-                    $skillCount = $subject->skills()->where('is_active', true)->count();
+                    $skillCount = $subject->skills()->where('skills.is_active', true)->count();
                     $quizCount = Quiz::where('subject_id', $subject->id)->where('is_published', true)->count();
                 @endphp
                 <a href="{{ route('category.subject', [$path->id, $subject->id]) }}"

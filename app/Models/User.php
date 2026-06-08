@@ -104,4 +104,14 @@ class User extends Authenticatable
     {
         return $this->hasMany(Question::class, 'created_by');
     }
+
+    public function favorites(): HasMany
+    {
+        return $this->hasMany(Favorite::class);
+    }
+
+    public function reviewLaters(): HasMany
+    {
+        return $this->hasMany(ReviewLater::class);
+    }
 }

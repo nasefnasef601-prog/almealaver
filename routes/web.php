@@ -58,9 +58,7 @@ Route::post('/reset-password', [AuthController::class, 'resetPassword'])->name('
 
 // Student routes
 Route::middleware(['auth', 'role:student'])->prefix('student')->name('student.')->group(function () {
-    Route::get('/dashboard', function () {
-        return view('student.dashboard');
-    })->name('dashboard');
+    Route::get('/dashboard', [\App\Http\Controllers\StudentDashboardController::class, 'index'])->name('dashboard');
 
     Route::get('/profile', [\App\Http\Controllers\AuthController::class, 'showProfile'])->name('profile');
     Route::post('/profile/update', [\App\Http\Controllers\AuthController::class, 'updateProfile'])->name('profile.update');
@@ -106,12 +104,20 @@ Route::middleware(['auth', 'role:student'])->prefix('student')->name('student.')
     Route::post('/favorite/toggle', function (\Illuminate\Http\Request $request) {
         $type = $request->input('type');
         $id = $request->input('id');
-        $modelMap = ['course' => \App\Models\Course::class, 'lesson' => \App\Models\Lesson::class];
+        $modelMap = [
+            'course' => \App\Models\Course::class,
+            'lesson' => \App\Models\Lesson::class,
+            'question' => \App\Models\Question::class
+        ];
         $modelClass = $modelMap[$type] ?? null;
         if (!$modelClass) return response()->json(['error' => 'Invalid type'], 400);
         $isFav = \App\Models\Favorite::toggle(auth()->id(), $modelClass, $id);
         return response()->json(['favorited' => $isFav]);
     })->name('favorite.toggle');
+
+    Route::post('/review-later/toggle', [\App\Http\Controllers\StudentDashboardController::class, 'toggleReviewLater'])->name('review-later.toggle');
+    Route::post('/saher/generate', [\App\Http\Controllers\StudentDashboardController::class, 'generateSaherQuiz'])->name('saher.generate');
+    Route::post('/sessions/book', [\App\Http\Controllers\StudentDashboardController::class, 'bookPrivateSession'])->name('sessions.book');
 
     Route::get('/quizzes', [\App\Http\Controllers\QuizController::class, 'index'])->name('quiz.list');
     Route::get('/quiz/{quiz}', [\App\Http\Controllers\QuizController::class, 'show'])->name('quiz.show');

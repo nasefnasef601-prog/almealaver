@@ -17,6 +17,8 @@ class Lesson extends Model
         'module_id', 'course_id', 'title', 'title_ar', 'description', 'description_ar',
         'content_type', 'content_url', 'content_text', 'video_provider', 'video_url',
         'duration_minutes', 'is_free', 'is_published', 'sort_order',
+        'meeting_date', 'meeting_url', 'recording_url', 'join_instructions',
+        'show_recording_on_platform', 'show_on_platform', 'allowed_groups',
     ];
 
     protected function casts(): array
@@ -25,6 +27,9 @@ class Lesson extends Model
             'is_free' => 'boolean',
             'is_published' => 'boolean',
             'sort_order' => 'integer',
+            'meeting_date' => 'datetime',
+            'show_recording_on_platform' => 'boolean',
+            'show_on_platform' => 'boolean',
         ];
     }
 

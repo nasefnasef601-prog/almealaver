@@ -113,17 +113,18 @@ class StudentDashboardController extends Controller
 
         // --- SMART PATH DATA ---
         $smartPathRecommendations = [];
-        if ($tab === 'smart-path' || $tab === 'overview') {
-            $studentSkillGaps = SkillProgress::where('user_id', $user->id)
-                ->where('mastery', '<', 75)
-                ->with(['skill.section.subject'])
-                ->orderBy('mastery')
-                ->take(12)
-                ->get();
+        $studentSkillGaps = SkillProgress::where('user_id', $user->id)
+            ->where('mastery', '<', 75)
+            ->with(['skill.section.subject'])
+            ->orderBy('mastery')
+            ->take(12)
+            ->get();
 
-            foreach ($studentSkillGaps as $idx => $sp) {
-                $skill = $sp->skill;
-                if (!$skill) continue;
+        foreach ($studentSkillGaps as $idx => $sp) {
+            $skill = $sp->skill;
+            if (!$skill) {
+                continue;
+            }
 
                 $priority = $sp->mastery < 50 ? 'high' : 'medium';
                 
@@ -153,11 +154,8 @@ class StudentDashboardController extends Controller
 
                 // Find a quiz for this skill
                 $quiz = Quiz::where('is_published', true)
-                    ->where(function($q) use ($skill) {
-                        $q->where('skill_id', $skill->id)
-                          ->orWhereHas('questions', function($q2) use ($skill) {
-                              $q2->where('skill_id', $skill->id);
-                          });
+                    ->whereHas('questions', function($q2) use ($skill) {
+                        $q2->where('skill_id', $skill->id);
                     })
                     ->first();
 
@@ -189,55 +187,42 @@ class StudentDashboardController extends Controller
                         'link' => route('student.skills'),
                     ];
                 }
-            }
         }
 
         // --- SESSIONS DATA ---
-        $bookedSessions = [];
-        $liveSessions = [];
-        if ($tab === 'sessions' || $tab === 'overview') {
-            // Booked private sessions (stored as activity logs of action 'session_booked')
-            $bookedSessions = ActivityLog::where('user_id', $user->id)
-                ->where('action', 'session_booked')
-                ->orderBy('created_at', 'desc')
-                ->get();
+        // Booked private sessions (stored as activity logs of action 'session_booked')
+        $bookedSessions = ActivityLog::where('user_id', $user->id)
+            ->where('action', 'session_booked')
+            ->orderBy('created_at', 'desc')
+            ->get();
 
-            // Upcoming live meetings (lessons with live video types)
-            $liveSessions = Lesson::whereIn('content_type', ['live_youtube', 'zoom', 'google_meet', 'teams'])
-                ->where('is_published', true)
-                ->where(function($q) use ($enrolledCourseIds) {
-                    $q->whereIn('course_id', $enrolledCourseIds)
-                      ->orWhereHas('course', function($c) {
-                          $c->where('price', 0);
-                      });
-                })
-                ->orderBy('meeting_date', 'asc')
-                ->get();
-        }
+        // Upcoming live meetings (lessons with live video types)
+        $liveSessions = Lesson::whereIn('content_type', ['live_youtube', 'zoom', 'google_meet', 'teams'])
+            ->where('is_published', true)
+            ->where(function($q) use ($enrolledCourseIds) {
+                $q->whereIn('course_id', $enrolledCourseIds)
+                    ->orWhereHas('course', function($c) {
+                        $c->where('price', 0);
+                    });
+            })
+            ->orderBy('meeting_date', 'asc')
+            ->get();
 
         // --- SAHER (TEST CENTER) DATA ---
-        $saherQuizzes = [];
-        $paths = [];
-        $subjects = [];
-        $sections = [];
-        $skills = [];
-        if ($tab === 'saher') {
-            $saherQuizzes = Quiz::where('is_published', true)
-                ->where('mode', 'saher')
-                ->with('course', 'questions')
-                ->latest()
-                ->get();
+        $saherQuizzes = Quiz::where('is_published', true)
+            ->where('quiz_type', 'saher')
+            ->with('course', 'questions')
+            ->latest()
+            ->get();
 
-            $paths = Path::where('is_active', true)->get();
-            $subjects = Subject::where('is_active', true)->get();
-            $sections = Section::where('is_active', true)->get();
-            $skills = Skill::where('is_active', true)->get();
-        }
+        $paths = Path::where('is_active', true)->get();
+        $subjects = Subject::where('is_active', true)->get();
+        $sections = Section::where('is_active', true)->get();
+        $skills = Skill::where('is_active', true)->get();
 
         // --- ATTEMPTS/QUIZZES DATA ---
         $attemptsGrouped = [];
-        if ($tab === 'quizzes') {
-            $allAttempts = QuizAttempt::where('user_id', $user->id)
+        $allAttempts = QuizAttempt::where('user_id', $user->id)
                 ->with(['quiz.course', 'result'])
                 ->orderBy('created_at', 'desc')
                 ->get();
@@ -252,7 +237,7 @@ class StudentDashboardController extends Controller
                         'key' => $key,
                         'quiz_id' => $quiz?->id,
                         'quiz_title' => $quiz ? ($quiz->title_ar ?? $quiz->title) : 'اختبار مخصص',
-                        'category' => ($quiz && $quiz->mode === 'mock_exam') ? 'mock' : 'regular',
+                        'category' => ($quiz && $quiz->quiz_type === 'mock_exam') ? 'mock' : 'regular',
                         'attempts' => [],
                         'latest_attempt' => null,
                         'best_score' => 0,
@@ -264,17 +249,16 @@ class StudentDashboardController extends Controller
                 }
             }
 
-            foreach ($grouped as $k => $data) {
+        foreach ($grouped as $k => $data) {
                 $data['latest_attempt'] = $data['attempts'][0];
                 $attemptsGrouped[] = $data;
-            }
         }
 
         // --- FAVORITES / REVIEW CENTER DATA ---
         $favQuestions = [];
         $reviewLaterQuestions = [];
         $mistakeQuestions = [];
-        if ($tab === 'favorites') {
+        if (true) {
             // 1. Favorited Questions
             $favQuestionIds = Favorite::where('user_id', $user->id)
                 ->where('favoriteable_type', Question::class)
@@ -333,7 +317,7 @@ class StudentDashboardController extends Controller
 
         // --- REQUESTS DATA ---
         $paymentRequests = [];
-        if ($tab === 'requests' || $tab === 'payments') {
+        if (true) {
             $paymentRequests = PaymentRequest::where('user_id', $user->id)
                 ->with('course')
                 ->latest()
@@ -395,7 +379,7 @@ class StudentDashboardController extends Controller
         $timeLimit = (int)$request->input('time_limit', 20);
 
         // Build pool query
-        $query = Question::query();
+        $query = Question::query()->where('status', 'active');
         if ($pathId) {
             $query->whereHas('subject', function($q) use ($pathId) {
                 $q->where('path_id', $pathId);
@@ -425,15 +409,25 @@ class StudentDashboardController extends Controller
             'title' => 'ساهر ذاتي - ' . ($difficulty === 'easy' ? 'سهل' : ($difficulty === 'hard' ? 'صعب' : 'متوسط')),
             'title_ar' => 'ساهر ذاتي - ' . ($difficulty === 'easy' ? 'سهل' : ($difficulty === 'hard' ? 'صعب' : 'متوسط')),
             'description' => 'اختبار ساهر تم توليده تلقائياً بناءً على مهاراتك المحددة.',
+            'created_by' => $user->id,
+            'quiz_type' => 'saher',
+            'difficulty' => strtolower($difficulty),
             'time_limit' => $timeLimit,
             'max_attempts' => 1,
+            'randomize_questions' => true,
+            'show_answers' => true,
+            'show_explanations' => true,
             'is_published' => true,
-            'mode' => 'saher',
+            'status' => 'active',
         ]);
 
         // Attach questions
         foreach ($questions as $idx => $q) {
-            $q->update(['quiz_id' => $quiz->id]);
+            $copy = $q->replicate();
+            $copy->quiz_id = $quiz->id;
+            $copy->created_by = $user->id;
+            $copy->status = 'active';
+            $copy->save();
         }
 
         // Create the attempt

@@ -32,6 +32,26 @@ Route::get('/courses/{course}', function (App\Models\Course $course) {
     return view('public.course-detail', ['course' => $course]);
 })->name('course-detail');
 
+// Legacy React route aliases kept during the Node/React -> Laravel transition.
+Route::redirect('/dashboard', '/student/dashboard')->name('legacy.dashboard');
+Route::redirect('/my-quizzes', '/student/dashboard?tab=quizzes')->name('legacy.my-quizzes');
+Route::redirect('/my-requests', '/student/dashboard?tab=payments')->name('legacy.my-requests');
+Route::redirect('/reports', '/student/dashboard?tab=reports')->name('legacy.reports');
+Route::redirect('/favorites', '/student/dashboard?tab=favorites')->name('legacy.favorites');
+Route::redirect('/plan', '/student/dashboard?tab=plan')->name('legacy.plan');
+Route::redirect('/qa', '/student/dashboard?tab=favorites')->name('legacy.qa');
+Route::redirect('/book-session', '/student/dashboard?tab=sessions')->name('legacy.book-session');
+Route::redirect('/live-sessions', '/student/dashboard?tab=sessions')->name('legacy.live-sessions');
+Route::redirect('/profile', '/student/profile')->name('legacy.profile');
+Route::redirect('/mock-exams', '/student/mock-exams')->name('legacy.mock-exams');
+Route::redirect('/quizzes', '/student/quizzes')->name('legacy.quizzes');
+Route::redirect('/results', '/student/results')->name('legacy.results');
+Route::redirect('/achievements', '/student/dashboard')->name('legacy.achievements');
+Route::redirect('/review', '/student/dashboard?tab=favorites')->name('legacy.review');
+Route::get('/course/{course}', function (App\Models\Course $course) {
+    return redirect()->route('course-detail', $course);
+})->name('legacy.course');
+
 Route::get('/search/query', [\App\Http\Controllers\SearchController::class, 'query'])->name('search.query');
 
 // Public path/subject pages
@@ -42,6 +62,10 @@ Route::get('/category/{path}', function (App\Models\Path $path) {
 Route::get('/category/{path}/subject/{subject}', function (App\Models\Path $path, App\Models\Subject $subject) {
     return view('public.subject-learning', ['path' => $path, 'subject' => $subject]);
 })->name('category.subject');
+
+Route::get('/category/{path}/{subject}', function (App\Models\Path $path, App\Models\Subject $subject) {
+    return redirect()->route('category.subject', ['path' => $path, 'subject' => $subject]);
+})->name('legacy.category.subject');
 
 // Auth routes
 Route::get('/login', [AuthController::class, 'showLogin'])->name('login');

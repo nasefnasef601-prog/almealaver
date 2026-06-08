@@ -32,9 +32,9 @@ class Subject extends Model
         return $this->hasMany(Section::class);
     }
 
-    public function skills(): HasMany
+    public function skills(): \Illuminate\Database\Eloquent\Relations\HasManyThrough
     {
-        return $this->hasMany(Skill::class);
+        return $this->hasManyThrough(Skill::class, Section::class);
     }
 
     public function courses(): HasMany

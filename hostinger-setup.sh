@@ -67,6 +67,13 @@ mkdir -p storage/app/public storage/framework/cache/data storage/framework/sessi
 chmod -R 775 storage bootstrap/cache || true
 
 php artisan key:generate --force
+php artisan config:clear
+php artisan cache:clear || true
+
+echo "Checking database connection..."
+php artisan migrate:status >/dev/null
+
+echo "Running database migrations and seeders..."
 php artisan migrate --seed --force
 php artisan storage:link || true
 php artisan optimize

@@ -25,6 +25,8 @@
 /test_read_permissions.php
 /zip_project.ps1
 /project.tar
+/project.zip
+/project-hostinger.zip
 /New*.txt
 _ide_helper.php
 Homestead.json

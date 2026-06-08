@@ -37,10 +37,28 @@
 - `php -l app/Models/Quiz.php`: نجح.
 - `git diff --check`: نجح.
 
-## ما يحتاج تحقق بعد الرفع
+## تحقق تم بعد الرفع إلى Hostinger
 
-- تشغيل `php artisan migrate --force` على Hostinger بعد وصول التغييرات التي تضيف جداول/حقول جديدة.
-- فتح `/student/dashboard` بحساب طالب وتجربة كل تبويب، خصوصا ساهر ومركز مراجعة الأسئلة.
+- تم رفع الفرع `main` إلى GitHub حتى commit `a59f6a4`.
+- Hostinger استلم الملفات الجديدة؛ تم العثور على ملف التسليم داخل ملفات الاستضافة.
+- `php artisan migrate --force`: نجح، والنتيجة `Nothing to migrate`.
+- `php artisan optimize:clear`: نجح.
+- `php artisan optimize`: نجح.
+- `php artisan about`: أكد Laravel `13.12.0` وPHP `8.5.4` وبيئة production وDebug OFF.
+- `filament:optimize`: فشل بسبب أمر `icons:cache` غير موجود في هذه النسخة، لذلك اعتبرناه اختياريا وليس مانعا للتشغيل.
+- الروابط العامة التالية رجعت 200:
+  - `https://almeaa.xyz/`
+  - `https://almeaa.xyz/admin/login`
+  - `https://almeaa.xyz/category/1`
+  - `https://almeaa.xyz/category/1/subject/1`
+- `https://almeaa.xyz/student/dashboard` يرجع 302 لغير المسجل، وهذا متوقع.
+- تم اختبار دخول الطالب التجريبي، وبعد الدخول رجعت لوحة الطالب 200 واحتوت تبويبات اللوحة.
+- الملفات الحساسة `/.env` و`/composer.json` و`/storage/test.txt` رجعت 403.
+- تم حذف ملفات التشغيل المؤقتة من `public_html` و`public_html/public`، ولا توجد ملفات `_codex*` متبقية.
+
+## ما يحتاج تحقق يدوي إضافي
+
+- تجربة كل تبويب بصريا داخل المتصفح، خصوصا ساهر ومركز مراجعة الأسئلة.
 - توليد اختبار ساهر والتأكد أن الاختبار يبدأ وأن الأسئلة الأصلية لم تختف من الاختبارات القديمة.
 - تجربة حجز جلسة خاصة والتأكد من ظهور الطلب داخل تبويب جلساتي.
 - تجربة المفضلة وراجع لاحقا من صفحة نتيجة اختبار.

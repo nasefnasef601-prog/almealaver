@@ -5,6 +5,11 @@
 @php
     $questionsArray = $questions->values();
     $totalQ = $questionsArray->count();
+    $questionsPayload = $questionsArray->map(fn($q) => [
+        'id' => $q->id,
+        'text' => $q->question_text_ar ?? $q->question_text,
+        'options' => $q->options ?? [],
+    ])->values();
 @endphp
 
 @section('content')
@@ -147,11 +152,7 @@
         return {
             current: 0,
             total: totalQ,
-            questions: @json($questionsArray->map(fn($q) => [
-                'id' => $q->id,
-                'text' => $q->question_text_ar ?? $q->question_text,
-                'options' => $q->options ?? [],
-            ])),
+            questions: @json($questionsPayload),
             submittedAnswers: {},
             flagged: {},
             timeLimit: timeLimitMinutes || 0,

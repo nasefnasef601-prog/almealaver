@@ -21,6 +21,11 @@
 /storage/*.key
 /storage/pail
 /vendor
+/local_zip.php
+/test_read_permissions.php
+/zip_project.ps1
+/project.tar
+/New*.txt
 _ide_helper.php
 Homestead.json
 Homestead.yaml

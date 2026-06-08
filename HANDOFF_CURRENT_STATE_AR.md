@@ -99,4 +99,5 @@
   - `/vendor` يرجع 403.
   - `/storage/logs/laravel.log` لا يظهر من المتصفح.
 - تم حذف ملفات التشغيل المؤقتة `_codex_public_*` من الاستضافة بعد انتهاء الأوامر.
+- بعد أول push جديد أعاد Hostinger النشر وظهر 500 لأن ملف `storage/logs/laravel.log` غير موجود/غير قابل للإنشاء في shared hosting. تم ضبط `LOG_CHANNEL=errorlog` في `.env` الإنتاجي، وتم حذف `laravel.log` للاختبار، وبقيت الصفحة الرئيسية ترجع 200.
 - تنبيه أمني: مفاتيح GitHub وHostinger وبيانات FTP/MySQL ظهرت أثناء العمل. بعد انتهاء الاستلام النهائي يجب تدويرها كلها من GitHub وHostinger.

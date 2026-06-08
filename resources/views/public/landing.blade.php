@@ -19,6 +19,7 @@ $testimonials = $s['testimonials'] ?? [
 $whyChoose = $s['whyChoose'] ?? [];
 $paths = \App\Models\Path::where('is_active', true)->orderBy('sort_order')->get();
 $featuredCourses = \App\Models\Course::where('is_published', true)->latest()->take(3)->get();
+$featuredArticles = \App\Models\Lesson::where('is_published', true)->where('content_type', 'text')->with('course')->latest()->take(3)->get();
 $colors = ['indigo', 'amber', 'emerald', 'purple', 'rose', 'blue'];
 $whyDefaultFeatures = [
     ['icon' => 'video', 'title' => 'شرح مباشر وتفاعلي', 'description' => 'احضر الحصص وتابع الشرح بخطوات منظمة تناسب مستواك.'],
@@ -79,7 +80,7 @@ $whyBullets = $whyChoose['bullets'] ?? ['تحديثات مستمرة للأسئ�
             </div>
             <div class="lg:w-1/2 relative w-full">
                 <div class="relative w-full max-w-lg mx-auto">
-                    <img src="{{ $hero['imageUrl'] ?? 'https://images.unsplash.com/photo-1509062522246-3755977927d7?w=600&h=600&fit=crop' }}" alt="{{ $hero['imageAlt'] ?? 'طالب يستخدم منصة المئة' }}" class="w-full h-auto rounded-3xl shadow-2xl border-4 border-white relative z-10 transform transition-transform hover:scale-[1.02]">
+                    <img src="{{ $hero['imageUrl'] ?? asset('images/homepage-hero-boy-platform.jpg') }}" alt="{{ $hero['imageAlt'] ?? 'طالب يستخدم منصة المئة' }}" class="w-full h-auto rounded-3xl shadow-2xl border-4 border-white relative z-10 transform transition-transform hover:scale-[1.02]">
                     <div class="absolute -bottom-4 right-2 sm:-bottom-6 sm:-right-6 z-20 bg-white/90 backdrop-blur-md p-3 sm:p-4 rounded-2xl shadow-xl border border-white/50 max-w-[180px] sm:max-w-[200px] animate-bounce-slow">
                         <div class="flex items-center gap-2 mb-2 border-b border-gray-100 pb-2">
                             <div class="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center text-blue-600">
@@ -192,7 +193,7 @@ $whyBullets = $whyChoose['bullets'] ?? ['تحديثات مستمرة للأسئ�
                     <div class="p-6 text-right">
                         <div class="flex items-center justify-between mb-3">
                             <div class="flex items-center gap-1 text-amber-400">
-                                @for($s = 0; $s < 5; $s++)
+                                @for($starCount = 0; $starCount < 5; $starCount++)
                                 <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
                                 @endfor
                                 <span class="text-xs font-bold text-gray-600 mr-1">{{ $course->rating ?? '4.8' }}</span>
@@ -222,8 +223,60 @@ $whyBullets = $whyChoose['bullets'] ?? ['تحديثات مستمرة للأسئ�
 </section>
 @endif
 
-{{-- WHY CHOOSE --}}
+{{-- FEATURED ARTICLES --}}
 <section class="py-20 bg-gray-50" x-intersect.threshold.20="$el.classList.add('animate-fade-in-up')" style="opacity: 0;">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="mb-12 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+            <div class="text-right">
+                <h2 class="text-3xl md:text-4xl font-black text-gray-900 mb-2">مقالات ومراجعات مهمة</h2>
+                <p class="text-gray-500">مجموعة مبسطة من الشروحات النصية والمراجعات التي تساعدك على الفهم الأسرع.</p>
+            </div>
+            <a href="#" class="self-start sm:self-auto text-indigo-600 font-bold hover:underline flex items-center gap-2">
+                استعرض المقالات
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="transform rotate-90"><path d="M12 5v14"/><path d="m19 12-7 7-7-7"/></svg>
+            </a>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            @foreach($featuredArticles as $article)
+            <a href="{{ route('student.lesson.show', ['course' => $article->course_id, 'lesson' => $article->id]) }}" class="group block h-full">
+                <div class="h-full border border-gray-100 hover:shadow-xl transition-all duration-300 rounded-3xl group-hover:-translate-y-1 bg-white p-6 text-right flex flex-col">
+                    <div class="flex items-center justify-between gap-3 mb-4">
+                        <span class="inline-flex items-center gap-2 rounded-full bg-indigo-50 text-indigo-700 px-3 py-1 text-xs font-bold">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
+                            شرح نصي
+                        </span>
+                        <span class="text-[11px] text-gray-400 font-bold">
+                            {{ $article->course?->title_ar ?? $article->course?->title ?? 'شرح عام' }}
+                        </span>
+                    </div>
+
+                    <h3 class="font-bold text-gray-900 mb-3 leading-8 group-hover:text-indigo-600 transition-colors line-clamp-2">
+                        {{ $article->title_ar ?: $article->title }}
+                    </h3>
+
+                    <p class="text-sm text-gray-600 leading-7 line-clamp-4 flex-1">
+                        {{ Str::limit(strip_tags($article->content_text_ar ?: $article->content_text), 150) }}
+                    </p>
+
+                    <div class="mt-5 pt-4 border-t border-gray-100 flex items-center justify-between">
+                        <span class="text-xs text-gray-400 font-medium">
+                            مقالة تعليمية
+                        </span>
+                        <span class="text-indigo-600 font-bold text-sm">اقرأ الآن</span>
+                    </div>
+                </div>
+            </a>
+            @endforeach
+        </div>
+        @if($featuredArticles->isEmpty())
+            <div class="text-center py-12 text-gray-500">لا توجد مقالات أو شروحات نصية منشورة حاليًا.</div>
+        @endif
+    </div>
+</section>
+
+{{-- WHY CHOOSE --}}
+<section class="py-20 bg-white" x-intersect.threshold.20="$el.classList.add('animate-fade-in-up')" style="opacity: 0;">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div class="flex flex-col lg:flex-row items-center gap-10 lg:gap-16">
             <div class="lg:w-1/2 grid grid-cols-1 sm:grid-cols-2 gap-6">
@@ -291,7 +344,7 @@ $whyBullets = $whyChoose['bullets'] ?? ['تحديثات مستمرة للأسئ�
                 </div>
                 <p class="text-indigo-100 text-sm leading-relaxed italic">"{{ $t['text'] }}"</p>
                 <div class="flex gap-1 text-amber-400 mt-4">
-                    @for($s = 0; $s < 5; $s++)
+                    @for($starCount = 0; $starCount < 5; $starCount++)
                     <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
                     @endfor
                 </div>

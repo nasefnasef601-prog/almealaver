@@ -78,6 +78,16 @@ class Course extends Model
         return $this->hasMany(LessonCompletion::class);
     }
 
+    public function reviews(): HasMany
+    {
+        return $this->hasMany(CourseReview::class);
+    }
+
+    public function approvedReviews(): HasMany
+    {
+        return $this->hasMany(CourseReview::class)->where('is_approved', true);
+    }
+
     public function scopePublished($query)
     {
         return $query->where('is_published', true);

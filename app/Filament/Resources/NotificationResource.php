@@ -7,6 +7,7 @@ use App\Models\Notification;
 use BackedEnum;
 use Filament\Resources\Resource;
 use Filament\Tables;
+use Filament\Actions\Action;
 use Filament\Tables\Table;
 
 class NotificationResource extends Resource
@@ -84,6 +85,7 @@ class NotificationResource extends Resource
     {
         return [
             'index' => Pages\ListNotifications::route('/'),
+            'view' => Pages\ViewNotification::route('/{record}'),
         ];
     }
 }

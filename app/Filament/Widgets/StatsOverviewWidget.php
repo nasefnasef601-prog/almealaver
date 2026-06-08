@@ -17,23 +17,24 @@ class StatsOverviewWidget extends BaseWidget
 {
     protected function getStats(): array
     {
+        $userCounts = User::selectRaw("COUNT(*) as total, SUM(CASE WHEN role='student' THEN 1 ELSE 0 END) as students, SUM(CASE WHEN role='teacher' THEN 1 ELSE 0 END) as teachers")->first();
         $pendingPayments = PaymentRequest::whereIn('status', ['pending', 'pending_manual_review'])->count();
         $totalRevenue = PaymentRequest::where('status', 'approved')->sum('amount');
         $completedLessons = LessonCompletion::count();
         $quizResults = QuizResult::count();
 
         return [
-            Stat::make('المستخدمين', User::count())
+            Stat::make('المستخدمين', $userCounts->total)
                 ->description('إجمالي المستخدمين')
                 ->icon('heroicon-o-users')
                 ->color('info'),
 
-            Stat::make('الطلاب', User::where('role', 'student')->count())
+            Stat::make('الطلاب', $userCounts->students)
                 ->description('إجمالي الطلاب')
                 ->icon('heroicon-o-academic-cap')
                 ->color('success'),
 
-            Stat::make('المدرسين', User::role('teacher')->count())
+            Stat::make('المدرسين', $userCounts->teachers)
                 ->description('إجمالي المدرسين')
                 ->icon('heroicon-o-chalkboard-teacher')
                 ->color('warning'),

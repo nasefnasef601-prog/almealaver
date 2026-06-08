@@ -92,6 +92,7 @@
                         <th class="text-center p-4 font-bold text-gray-600">طريقة الدفع</th>
                         <th class="text-center p-4 font-bold text-gray-600">الحالة</th>
                         <th class="text-center p-4 font-bold text-gray-600">التاريخ</th>
+                        <th class="text-center p-4 font-bold text-gray-600">الإيصال</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -116,11 +117,20 @@
                                     @endswitch
                                 </span>
                             </td>
-                            <td class="p-4 text-center text-gray-500 text-xs">{{ $p->created_at->format('Y-m-d') }}</td>
+                             <td class="p-4 text-center text-gray-500 text-xs">{{ $p->created_at->format('Y-m-d') }}</td>
+                             <td class="p-4 text-center">
+                                 @if($p->status === 'approved')
+                                 <a href="{{ route('student.receipt', $p->id) }}" target="_blank"
+                                    class="text-blue-600 hover:text-blue-800 text-xs font-bold inline-flex items-center gap-1">
+                                     <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z"/></svg>
+                                     الإيصال
+                                 </a>
+                                 @endif
+                             </td>
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="6" class="p-12 text-center">
+                            <td colspan="7" class="p-12 text-center">
                                 <svg class="w-16 h-16 mx-auto mb-4 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z"/></svg>
                                 <p class="text-gray-500">لا توجد مدفوعات بعد</p>
                                 <p class="text-gray-400 text-sm mt-1">اشترك في باقة للوصول لكل المحتوى</p>

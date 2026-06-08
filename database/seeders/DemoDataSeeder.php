@@ -24,6 +24,11 @@ class DemoDataSeeder extends Seeder
 {
     public function run(): void
     {
+        if (User::where('email', 'admin@demo.local')->exists()) {
+            $this->command->warn('Demo data already seeded, skipping.');
+            return;
+        }
+
         $school = School::create([
             'name' => 'Almeaa International School',
             'name_ar' => 'مدرسة المئة العالمية',
@@ -265,6 +270,47 @@ class DemoDataSeeder extends Seeder
                 'explanation_ar' => "الإجابة الصحيحة هي: {$qData[2]}",
                 'points' => 1,
                 'difficulty' => 'easy',
+                'status' => 'approved',
+            ]);
+        }
+
+        $mockQuiz = Quiz::create([
+            'title' => 'Scholastic Achievement Mathematics Mock Exam',
+            'title_ar' => 'الاختبار التجريبي المحاكي لمادة الرياضيات - التحصيلي',
+            'description' => 'Comprehensive mock exam for scholastic achievement mathematics',
+            'description_ar' => 'اختبار محاكي شامل لمادة الرياضيات التحصيلي، يحاكي بيئة اختبار قياس الحقيقية.',
+            'subject_id' => $subject->id,
+            'created_by' => $teacher->id,
+            'quiz_type' => 'mock_exam',
+            'difficulty' => 'medium',
+            'time_limit' => 45,
+            'passing_score' => 70,
+            'max_attempts' => 5,
+            'randomize_questions' => true,
+            'show_answers' => true,
+            'show_explanations' => true,
+            'is_published' => true,
+            'status' => 'approved',
+        ]);
+
+        foreach ($questionsData as $i => $qData) {
+            $options = array_map(function ($opt) {
+                return ['id' => uniqid(), 'text' => $opt, 'text_ar' => $opt, 'is_correct' => false];
+            }, $qData[3]);
+            $options[0]['is_correct'] = true;
+
+            Question::create([
+                'quiz_id' => $mockQuiz->id,
+                'created_by' => $teacher->id,
+                'question_type' => 'mcq',
+                'question_text' => $qData[0] . ' (Mock)',
+                'question_text_ar' => $qData[1] . ' (تجريبي)',
+                'options' => $options,
+                'correct_answer' => $qData[2],
+                'explanation' => "The correct answer is: {$qData[2]}",
+                'explanation_ar' => "الإجابة الصحيحة هي: {$qData[2]}",
+                'points' => 1,
+                'difficulty' => 'medium',
                 'status' => 'approved',
             ]);
         }

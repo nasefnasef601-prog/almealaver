@@ -88,6 +88,10 @@
                        class="px-3 py-2 text-sm font-bold text-gray-600 hover:text-amber-500 rounded-lg hover:bg-amber-50 transition-colors {{ request()->is('courses') ? 'text-amber-500 bg-amber-50' : '' }}">الكورسات</a>
                     <a href="{{ route('pricing') }}"
                        class="px-3 py-2 text-sm font-bold text-gray-600 hover:text-amber-500 rounded-lg hover:bg-amber-50 transition-colors {{ request()->is('pricing') ? 'text-amber-500 bg-amber-50' : '' }}">الباقات</a>
+                    <a href="{{ route('faq') }}"
+                       class="px-3 py-2 text-sm font-bold text-gray-600 hover:text-amber-500 rounded-lg hover:bg-amber-50 transition-colors {{ request()->is('faq') ? 'text-amber-500 bg-amber-50' : '' }}">الأسئلة الشائعة</a>
+                    <a href="{{ route('contact') }}"
+                       class="px-3 py-2 text-sm font-bold text-gray-600 hover:text-amber-500 rounded-lg hover:bg-amber-50 transition-colors {{ request()->is('contact') ? 'text-amber-500 bg-amber-50' : '' }}">اتصل بنا</a>
                     @auth
                         @if(Auth::user()->hasRole('admin'))
                             <a href="/admin" class="px-3 py-2 text-sm font-bold text-gray-600 hover:text-amber-500 rounded-lg hover:bg-amber-50 transition-colors">لوحة الإدارة</a>
@@ -241,14 +245,74 @@
                 </div>
                 <div class="max-h-[60vh] overflow-auto p-4">
                     <template x-if="searchQuery.length > 0 && searchQuery.length < 2">
-                        <p class="text-sm text-gray-500">اكتب حرفين على الأقل.</p>
-                    </template>
-                    <template x-if="searchQuery.length >= 2 && !searchLoading">
-                        <p class="text-sm text-gray-500">لا توجد نتائج مطابقة الآن.</p>
+                        <p class="text-sm text-gray-500 text-center py-4">اكتب حرفين على الأقل للبحث.</p>
                     </template>
                     <template x-if="searchLoading">
-                        <p class="text-sm text-gray-500">جاري البحث...</p>
+                        <p class="text-sm text-gray-500 text-center py-4">جاري البحث...</p>
                     </template>
+                    <div x-show="!searchLoading && searchQuery.length >= 2" class="space-y-4">
+                        {{-- Courses --}}
+                        <template x-if="searchResults.courses && searchResults.courses.length > 0">
+                            <div>
+                                <h4 class="text-xs font-bold text-gray-400 mb-2 border-b border-gray-100 pb-1">الدورات التدريبية</h4>
+                                <div class="space-y-2">
+                                    <template x-for="course in searchResults.courses" :key="course.id">
+                                        <a :href="`{{ url('/courses') }}/${course.id}`" class="flex items-center gap-3 p-2 hover:bg-gray-50 rounded-xl transition-colors">
+                                            <div class="w-8 h-8 rounded-lg bg-indigo-50 text-indigo-600 flex items-center justify-center font-bold text-xs shrink-0" x-text="course.title_ar ? course.title_ar.substring(0,1) : course.title.substring(0,1)"></div>
+                                            <div class="flex-1 min-w-0">
+                                                <p class="text-sm font-bold text-gray-900 truncate" x-text="course.title_ar || course.title"></p>
+                                                <p class="text-xs text-gray-400" x-text="course.price > 0 ? `${course.price} ريال` : 'مجانية'"></p>
+                                            </div>
+                                        </a>
+                                    </template>
+                                </div>
+                            </div>
+                        </template>
+
+                        {{-- Lessons --}}
+                        <template x-if="searchResults.lessons && searchResults.lessons.length > 0">
+                            <div>
+                                <h4 class="text-xs font-bold text-gray-400 mb-2 border-b border-gray-100 pb-1">الدروس التعليمية</h4>
+                                <div class="space-y-2">
+                                    <template x-for="lesson in searchResults.lessons" :key="lesson.id">
+                                        <a :href="`{{ url('/student/courses') }}/${lesson.course_id}/lessons/${lesson.id}`" class="flex items-center gap-3 p-2 hover:bg-gray-50 rounded-xl transition-colors">
+                                            <div class="w-8 h-8 rounded-lg bg-emerald-50 text-emerald-600 flex items-center justify-center font-bold text-xs shrink-0">
+                                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z"/></svg>
+                                            </div>
+                                            <div class="flex-1 min-w-0">
+                                                <p class="text-sm font-bold text-gray-900 truncate" x-text="lesson.title_ar || lesson.title"></p>
+                                                <p class="text-xs text-gray-400" x-text="lesson.content_type === 'video' ? 'فيديو' : 'نص / مقال'"></p>
+                                            </div>
+                                        </a>
+                                    </template>
+                                </div>
+                            </div>
+                        </template>
+
+                        {{-- Quizzes --}}
+                        <template x-if="searchResults.quizzes && searchResults.quizzes.length > 0">
+                            <div>
+                                <h4 class="text-xs font-bold text-gray-400 mb-2 border-b border-gray-100 pb-1">الاختبارات والتمارين</h4>
+                                <div class="space-y-2">
+                                    <template x-for="quiz in searchResults.quizzes" :key="quiz.id">
+                                        <a :href="`{{ url('/student/quiz') }}/${quiz.id}`" class="flex items-center gap-3 p-2 hover:bg-gray-50 rounded-xl transition-colors">
+                                            <div class="w-8 h-8 rounded-lg bg-amber-50 text-amber-600 flex items-center justify-center font-bold text-xs shrink-0">
+                                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>
+                                            </div>
+                                            <div class="flex-1 min-w-0">
+                                                <p class="text-sm font-bold text-gray-900 truncate" x-text="quiz.title_ar || quiz.title"></p>
+                                                <p class="text-xs text-gray-400" x-text="quiz.quiz_type === 'practice' ? 'تمارين' : 'اختبار تقييمي'"></p>
+                                            </div>
+                                        </a>
+                                    </template>
+                                </div>
+                            </div>
+                        </template>
+
+                        <template x-if="(!searchResults.courses || searchResults.courses.length === 0) && (!searchResults.lessons || searchResults.lessons.length === 0) && (!searchResults.quizzes || searchResults.quizzes.length === 0)">
+                            <p class="text-sm text-gray-500 text-center py-4">لا توجد نتائج مطابقة لـ "<span x-text="searchQuery"></span>"</p>
+                        </template>
+                    </div>
                 </div>
             </div>
         </div>
@@ -329,6 +393,7 @@
                 searchOpen: false,
                 searchQuery: '',
                 searchLoading: false,
+                searchResults: { courses: [], lessons: [], quizzes: [] },
                 cartCount: 0,
                 isLoading: false,
 
@@ -339,6 +404,22 @@
                                 if (this.$refs.searchInput) this.$refs.searchInput.focus();
                             });
                         }
+                    });
+                    this.$watch('searchQuery', (q) => {
+                        if (q.length < 2) {
+                            this.searchResults = { courses: [], lessons: [], quizzes: [] };
+                            return;
+                        }
+                        this.searchLoading = true;
+                        fetch(`/search/query?q=${encodeURIComponent(q)}`)
+                            .then(r => r.json())
+                            .then(d => {
+                                this.searchResults = d;
+                                this.searchLoading = false;
+                            })
+                            .catch(() => {
+                                this.searchLoading = false;
+                            });
                     });
                     document.addEventListener('keydown', (e) => {
                         if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'k') {

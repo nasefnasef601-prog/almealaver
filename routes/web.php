@@ -17,9 +17,22 @@ Route::get('/pricing', function () {
     return view('public.pricing');
 })->name('pricing');
 
+Route::get('/faq', function () {
+    $faqs = \App\Models\Faq::published()->get()->groupBy('category');
+    return view('public.faq', compact('faqs'));
+})->name('faq');
+
+Route::get('/contact', function () {
+    return view('public.contact');
+})->name('contact');
+
+Route::post('/contact', [\App\Http\Controllers\ContactController::class, 'send'])->name('contact.send');
+
 Route::get('/courses/{course}', function (App\Models\Course $course) {
     return view('public.course-detail', ['course' => $course]);
 })->name('course-detail');
+
+Route::get('/search/query', [\App\Http\Controllers\SearchController::class, 'query'])->name('search.query');
 
 // Public path/subject pages
 Route::get('/category/{path}', function (App\Models\Path $path) {
@@ -72,6 +85,8 @@ Route::middleware(['auth', 'role:student'])->prefix('student')->name('student.')
         return view('student.reports');
     })->name('reports');
 
+    Route::get('/export/progress', [\App\Http\Controllers\ExportController::class, 'progressCsv'])->name('export.progress');
+
     Route::get('/results', function () {
         return view('student.results');
     })->name('results');
@@ -105,11 +120,27 @@ Route::middleware(['auth', 'role:student'])->prefix('student')->name('student.')
     Route::post('/quiz/attempt/{attempt}/submit', [\App\Http\Controllers\QuizController::class, 'submit'])->name('quiz.submit');
     Route::get('/quiz/{quiz}/result', [\App\Http\Controllers\QuizController::class, 'result'])->name('quiz.result');
     Route::get('/quiz/{quiz}/result/{attempt}', [\App\Http\Controllers\QuizController::class, 'result'])->name('quiz.result.attempt');
+    Route::get('/mock-exams', [\App\Http\Controllers\MockExamController::class, 'index'])->name('mock-exams');
+
+    Route::post('/courses/{course}/review', [\App\Http\Controllers\ReviewController::class, 'submit'])->name('review.submit');
 
     Route::get('/courses/{course}/lessons/{lesson}', [\App\Http\Controllers\LessonController::class, 'show'])->name('lesson.show');
     Route::post('/courses/{course}/lessons/{lesson}/complete', [\App\Http\Controllers\LessonController::class, 'complete'])->name('lesson.complete');
+    Route::post('/courses/{course}/lessons/{lesson}/question', [\App\Http\Controllers\LessonQuestionController::class, 'ask'])->name('lesson.question.ask');
+    Route::post('/courses/{course}/lessons/{lesson}/question/{question}/answer', [\App\Http\Controllers\LessonQuestionController::class, 'answer'])->name('lesson.question.answer');
 
     // Notifications
+    Route::get('/certificate/{course}', function (\App\Models\Course $course) {
+        $completion = \App\Models\CourseCompletion::where('user_id', auth()->id())
+            ->where('course_id', $course->id)->firstOrFail();
+        return view('student.certificate', compact('course', 'completion'));
+    })->name('certificate');
+
+    Route::get('/receipt/{payment}', function (\App\Models\PaymentRequest $payment) {
+        if ($payment->user_id !== auth()->id()) abort(403);
+        return view('student.payment-receipt', compact('payment'));
+    })->name('receipt');
+
     Route::get('/notifications', [\App\Http\Controllers\NotificationController::class, 'index'])->name('notifications');
     Route::get('/notifications/unread', [\App\Http\Controllers\NotificationController::class, 'unreadCount'])->name('notifications.unread');
     Route::get('/notifications/dropdown', [\App\Http\Controllers\NotificationController::class, 'dropdown'])->name('notifications.dropdown');

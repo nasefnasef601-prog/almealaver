@@ -11,6 +11,8 @@ use Filament\Schemas\Schema;
 use Filament\Actions\EditAction;
 use Filament\Tables;
 use Filament\Tables\Table;
+use Filament\Actions\BulkActionGroup;
+use Filament\Actions\DeleteBulkAction;
 
 class CourseResource extends Resource
 {
@@ -41,13 +43,16 @@ class CourseResource extends Resource
                     ->preload(),
                 Forms\Components\TextInput::make('title_ar')
                     ->label('العنوان (عربي)')
-                    ->required(),
+                    ->required()
+                    ->maxLength(255),
                 Forms\Components\TextInput::make('title')
-                    ->label('العنوان (إنجليزي)'),
+                    ->label('العنوان (إنجليزي)')
+                    ->maxLength(255),
                 Forms\Components\TextInput::make('slug')
                     ->label('الرابط المختصر')
                     ->required()
-                    ->unique(ignoreRecord: true),
+                    ->unique(ignoreRecord: true)
+                    ->maxLength(255),
                 Forms\Components\RichEditor::make('description_ar')
                     ->label('الوصف (عربي)'),
                 Forms\Components\RichEditor::make('description')
@@ -55,9 +60,16 @@ class CourseResource extends Resource
                 Forms\Components\TextInput::make('price')
                     ->label('السعر')
                     ->numeric()
-                    ->default(0),
+                    ->default(0)
+                    ->minValue(0),
                 Forms\Components\Toggle::make('is_free')
                     ->label('مجاني'),
+                Forms\Components\Select::make('assigned_teacher_id')
+                    ->label('المدرس المسؤول')
+                    ->relationship('assignedTeacher', 'name')
+                    ->searchable()
+                    ->preload()
+                    ->nullable(),
                 Forms\Components\Toggle::make('is_published')
                     ->label('منشور'),
                 Forms\Components\Select::make('status')
@@ -80,7 +92,8 @@ class CourseResource extends Resource
                     ]),
                 Forms\Components\TextInput::make('duration_minutes')
                     ->label('المدة (دقائق)')
-                    ->numeric(),
+                    ->numeric()
+                    ->minValue(0),
                 Forms\Components\Toggle::make('has_certificate')
                     ->label('شهادة إتمام'),
             ]);
@@ -140,10 +153,18 @@ class CourseResource extends Resource
                 EditAction::make()->label('تعديل'),
             ])
             ->bulkActions([
-                Tables\Actions\BulkActionGroup::make([
-                    Tables\Actions\DeleteBulkAction::make()->label('حذف المحدد'),
+                BulkActionGroup::make([
+                    DeleteBulkAction::make()->label('حذف المحدد'),
                 ]),
             ]);
+    }
+
+    public static function getRelations(): array
+    {
+        return [
+            \App\Filament\Resources\CourseResource\RelationManagers\CourseModulesRelationManager::class,
+            \App\Filament\Resources\CourseResource\RelationManagers\LessonsRelationManager::class,
+        ];
     }
 
     public static function getPages(): array

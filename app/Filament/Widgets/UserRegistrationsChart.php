@@ -13,28 +13,34 @@ class UserRegistrationsChart extends LineChartWidget
 
     protected function getData(): array
     {
-        $data = collect();
+        $startDate = now()->subDays(29)->startOfDay();
+
+        $raw = User::where('created_at', '>=', $startDate)
+            ->selectRaw("DATE(created_at) as date, COUNT(*) as count")
+            ->groupBy('date')
+            ->orderBy('date')
+            ->pluck('count', 'date');
+
+        $labels = [];
+        $counts = [];
         for ($i = 29; $i >= 0; $i--) {
             $date = now()->subDays($i)->format('Y-m-d');
-            $count = User::whereDate('created_at', $date)->count();
-            $data->push([
-                'date' => now()->subDays($i)->format('M d'),
-                'count' => $count,
-            ]);
+            $labels[] = now()->subDays($i)->format('M d');
+            $counts[] = $raw[$date] ?? 0;
         }
 
         return [
             'datasets' => [
                 [
                     'label' => 'المستخدمين',
-                    'data' => $data->pluck('count')->toArray(),
+                    'data' => $counts,
                     'borderColor' => '#3b82f6',
                     'backgroundColor' => 'rgba(59, 130, 246, 0.1)',
                     'fill' => true,
                     'tension' => 0.3,
                 ],
             ],
-            'labels' => $data->pluck('date')->toArray(),
+            'labels' => $labels,
         ];
     }
 }

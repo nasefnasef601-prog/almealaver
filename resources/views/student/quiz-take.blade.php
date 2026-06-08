@@ -69,7 +69,7 @@
                                    @change="selectAnswer(q.id, oi)"
                                    :checked="submittedAnswers[q.id] == oi"
                                    class="w-5 h-5 text-blue-600 accent-blue-600 shrink-0">
-                            <span class="text-gray-700 font-medium" x-html="opt"></span>
+                            <span class="text-gray-700 font-medium" x-html="opt.text_ar || opt.text"></span>
                         </label>
                     </template>
                 </div>

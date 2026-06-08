@@ -3,7 +3,10 @@
 namespace App\Filament\Resources;
 
 use App\Filament\Resources\PaymentRequestResource\Pages;
+use App\Mail\PaymentApproved;
+use App\Mail\PaymentRejected;
 use App\Models\AccessGrant;
+use App\Models\ActivityLog;
 use App\Models\Notification as AppNotification;
 use App\Models\PaymentRequest;
 use BackedEnum;
@@ -14,6 +17,7 @@ use Filament\Schemas\Schema;
 use Filament\Tables;
 use Filament\Tables\Actions\Action;
 use Filament\Tables\Table;
+use Illuminate\Support\Facades\Mail;
 
 class PaymentRequestResource extends Resource
 {
@@ -156,6 +160,16 @@ class PaymentRequestResource extends Resource
                             'data' => ['amount' => $record->amount, 'payment_id' => $record->id],
                         ]);
 
+                        Mail::to($record->user->email)->send(new PaymentApproved($record));
+
+                        ActivityLog::log(
+                            'payment.approved',
+                            "تمت الموافقة على طلب دفع #{$record->id} بقيمة {$record->amount} ريال",
+                            PaymentRequest::class,
+                            $record->id,
+                            ['amount' => $record->amount, 'user_id' => $record->user_id]
+                        );
+
                         Notification::make()->success()->title('تمت الموافقة على طلب الدفع ومنح الوصول.')->send();
                     })
                     ->visible(fn (PaymentRequest $record) => $record->status === 'pending_manual_review'),
@@ -195,6 +209,16 @@ class PaymentRequestResource extends Resource
                             'body_ar' => "عذراً، تم رفض طلب الدفع بقيمة {$record->amount} ريال. سبب الرفض: {$data['notes']}",
                             'data' => ['amount' => $record->amount, 'payment_id' => $record->id],
                         ]);
+
+                        Mail::to($record->user->email)->send(new PaymentRejected($record, $data['notes']));
+
+                        ActivityLog::log(
+                            'payment.rejected',
+                            "تم رفض طلب دفع #{$record->id}: {$data['notes']}",
+                            PaymentRequest::class,
+                            $record->id,
+                            ['amount' => $record->amount, 'reason' => $data['notes']]
+                        );
 
                         Notification::make()->warning()->title('تم رفض طلب الدفع.')->send();
                     })

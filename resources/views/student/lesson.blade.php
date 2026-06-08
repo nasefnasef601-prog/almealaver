@@ -135,6 +135,21 @@
         </div>
     </div>
 
+    {{-- Course Completion Banner --}}
+    @if($courseCompletion ?? null)
+    <div class="mt-6 bg-gradient-to-r from-emerald-50 to-teal-50 border border-emerald-200 rounded-2xl p-6 flex items-center justify-between">
+        <div>
+            <h3 class="text-lg font-black text-emerald-800">&#x2705; تم إتمام الدورة بنجاح!</h3>
+            <p class="text-sm text-emerald-600 mt-1">أتممت جميع الدروس والاختبارات في هذه الدورة. أحسنت!</p>
+        </div>
+        <a href="{{ route('student.certificate', $course->id) }}" target="_blank"
+           class="px-5 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl font-bold transition-colors inline-flex items-center gap-2 shrink-0">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+            عرض الشهادة
+        </a>
+    </div>
+    @endif
+
     {{-- Prev/Next Navigation --}}
     <div class="flex items-center justify-between mt-6 pb-8">
         @if($prevLesson)
@@ -154,6 +169,76 @@
         @else
             <div></div>
         @endif
+    </div>
+
+    {{-- Q&A Section --}}
+    @php $questions = $lesson->questions()->with('user', 'answerer')->latest()->get(); @endphp
+    <div class="bg-white rounded-3xl border border-gray-100 shadow-sm p-6 sm:p-8 mt-6">
+        <h2 class="text-lg font-bold text-gray-900 mb-6 flex items-center gap-2">
+            <svg class="w-5 h-5 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"/></svg>
+            الأسئلة والنقاش
+            <span class="text-xs text-gray-400 font-normal">({{ $questions->count() }})</span>
+        </h2>
+
+        {{-- Ask Question Form --}}
+        <form method="POST" action="{{ route('student.lesson.question.ask', [$course->id, $lesson->id]) }}" class="mb-6 p-4 bg-gray-50 rounded-2xl">
+            @csrf
+            <textarea name="question" rows="2" placeholder="هل لديك سؤال حول هذا الدرس؟" required
+                      class="w-full border border-gray-200 rounded-xl p-3 text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all resize-none"></textarea>
+            <button type="submit" class="mt-2 px-5 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-bold text-sm transition-colors">
+                إرسال السؤال
+            </button>
+        </form>
+
+        {{-- Questions List --}}
+        @forelse($questions as $q)
+            <div class="py-4 border-b border-gray-50 last:border-0">
+                <div class="flex gap-3">
+                    <div class="w-8 h-8 rounded-full bg-gradient-to-br from-amber-400 to-orange-500 flex items-center justify-center text-white font-bold text-xs shrink-0">
+                        {{ mb_substr($q->user->name, 0, 1) }}
+                    </div>
+                    <div class="flex-1 min-w-0">
+                        <div class="flex items-center gap-2 mb-1">
+                            <span class="font-bold text-gray-900 text-sm">{{ $q->user->name }}</span>
+                            <span class="text-xs text-gray-400">{{ $q->created_at->diffForHumans() }}</span>
+                            @if($q->is_pinned)
+                                <span class="text-xs text-blue-600 font-bold">&#x1F4CC; مثبت</span>
+                            @endif
+                        </div>
+                        <p class="text-sm text-gray-700">{{ $q->question }}</p>
+
+                        @if($q->answer)
+                            <div class="mt-3 mr-6 p-3 bg-blue-50 rounded-xl border-r-2 border-blue-400">
+                                <div class="flex items-center gap-2 mb-1">
+                                    <span class="text-xs font-bold text-blue-700">{{ $q->answerer?->name ?? 'المدرس' }}</span>
+                                    <span class="text-xs text-gray-400">{{ $q->answered_at?->diffForHumans() }}</span>
+                                </div>
+                                <p class="text-sm text-gray-700">{{ $q->answer }}</p>
+                            </div>
+                        @else
+                            @php $isTeacher = auth()->user()->role === 'admin' || (auth()->user()->role === 'teacher' && $course->assigned_teacher_id === auth()->id()); @endphp
+                            @if($isTeacher)
+                                <form method="POST" action="{{ route('student.lesson.question.answer', [$course->id, $lesson->id, $q->id]) }}" class="mt-3 mr-6">
+                                    @csrf
+                                    <textarea name="answer" rows="2" placeholder="اكتب إجابتك..." required
+                                              class="w-full border border-gray-200 rounded-xl p-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all resize-none"></textarea>
+                                    <button type="submit" class="mt-1 px-4 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg font-bold text-xs transition-colors">
+                                        إجابة
+                                    </button>
+                                </form>
+                            @else
+                                <p class="mt-2 text-xs text-gray-400 mr-6">بانتظار إجابة المدرس</p>
+                            @endif
+                        @endif
+                    </div>
+                </div>
+            </div>
+        @empty
+            <div class="text-center py-6 text-gray-400">
+                <p class="text-sm">لا توجد أسئلة بعد</p>
+                <p class="text-xs mt-1">كن أول من يسأل عن هذا الدرس!</p>
+            </div>
+        @endforelse
     </div>
 </div>
 @endsection

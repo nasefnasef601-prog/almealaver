@@ -185,6 +185,54 @@
                                 </div>
                             </div>
                         @endif
+
+                        {{-- Weakest Skills & Study Plan --}}
+                        @php
+                            $weakSkills = \App\Models\SkillProgress::where('user_id', $student->id)
+                                ->with('skill.section.subject')
+                                ->orderBy('mastery')
+                                ->take(2)
+                                ->get();
+                        @endphp
+                        @if($weakSkills->isNotEmpty())
+                            <div class="mt-4 pt-4 border-t border-gray-100">
+                                <p class="text-xs font-bold text-red-600 mb-2 flex items-center gap-1">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+                                    مهارات تحتاج إلى تطوير عاجل:
+                                </p>
+                                <div class="grid sm:grid-cols-2 gap-3">
+                                    @foreach($weakSkills as $ws)
+                                        <div class="bg-red-50/50 border border-red-100 rounded-2xl p-3">
+                                            <div class="flex justify-between items-start gap-2 mb-2">
+                                                <span class="font-bold text-gray-800 text-xs">{{ $ws->skill->name_ar ?? $ws->skill->name }}</span>
+                                                <span class="text-[10px] font-bold bg-red-100 text-red-700 px-2 py-0.5 rounded-full">{{ $ws->mastery }}% إتقان</span>
+                                            </div>
+                                            <div class="text-[11px] text-gray-500 space-y-1">
+                                                <p><strong class="text-gray-700">اليوم الأول:</strong> مشاهدة شرح الدرس وتأسيس المفاهيم.</p>
+                                                <p><strong class="text-gray-700">اليوم الثاني:</strong> حل 15 سؤال تدريبي بتركيز.</p>
+                                                <p><strong class="text-gray-700">اليوم الثالث:</strong> إعادة اختبار المهارة لتحقيق 80%+.</p>
+                                            </div>
+                                        </div>
+                                    @endforeach
+                                </div>
+                            </div>
+                        @endif
+
+                        {{-- Teacher Smart Message --}}
+                        @php
+                            $msgText = "مرحباً، أود مشاركة تقرير ابننا {$student->name} في منصة المئة: أكمل {$sd['lessons']} درس، ومتوسط أدائه {$sd['results_count']} اختبار هو " . number_format($sd['avg_score'] ?? 0, 0) . "%." . ($weakSkills->isNotEmpty() ? " ونعمل حالياً على تقوية مهارة (" . ($weakSkills->first()->skill->name_ar ?? $weakSkills->first()->skill->name) . ")." : "");
+                        @endphp
+                        <div class="mt-4 pt-4 border-t border-gray-100 flex items-center justify-between gap-4">
+                            <div class="flex-1 min-w-0">
+                                <p class="text-[10px] text-gray-400 font-bold">رسالة المتابعة المخصصة لولي الأمر:</p>
+                                <p class="text-xs text-gray-600 truncate mt-1">"{{ $msgText }}"</p>
+                            </div>
+                            <button onclick="navigator.clipboard.writeText('{{ addslashes($msgText) }}'); alert('تم نسخ رسالة المتابعة بنجاح!');" 
+                                    class="shrink-0 inline-flex items-center gap-1.5 bg-blue-50 hover:bg-blue-100 text-blue-700 px-3 py-1.5 rounded-xl text-xs font-bold transition-all">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+                                نسخ الرسالة
+                            </button>
+                        </div>
                     </div>
                 @endforeach
             </div>

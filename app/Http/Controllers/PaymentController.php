@@ -13,6 +13,7 @@ class PaymentController extends Controller
         $request->validate([
             'course_id' => 'required|exists:courses,id',
             'amount' => 'required|numeric|min:0',
+            'bank_transfer_receipt' => 'nullable|image|mimes:jpg,jpeg,png|max:5120',
         ]);
 
         $course = Course::findOrFail($request->course_id);
@@ -41,16 +42,21 @@ class PaymentController extends Controller
             return back()->with('error', 'لديك وصول بالفعل لهذا الكورس.');
         }
 
-        $servedAmount = $course->price;
-
-        PaymentRequest::create([
+        $data = [
             'user_id' => $user->id,
             'course_id' => $course->id,
             'payment_method' => 'bank_transfer',
-            'amount' => $servedAmount,
+            'amount' => $course->price,
             'currency' => 'SAR',
             'status' => 'pending_manual_review',
-        ]);
+        ];
+
+        if ($request->hasFile('bank_transfer_receipt')) {
+            $data['bank_transfer_receipt'] = $request->file('bank_transfer_receipt')
+                ->store('payment-receipts', 'public');
+        }
+
+        PaymentRequest::create($data);
 
         return back()->with('success', 'تم إرسال طلب الدفع. سيتم مراجعته من قبل الإدارة.');
     }

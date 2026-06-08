@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Quiz;
 use App\Models\QuizAttempt;
 use App\Models\QuizResult;
+use App\Services\CourseCompletionService;
 use Illuminate\Http\Request;
 
 class QuizController extends Controller
@@ -105,7 +106,7 @@ class QuizController extends Controller
         return view('student.quiz-take', compact('quiz', 'questions', 'attempt', 'timeLimit'));
     }
 
-    public function submit(Request $request, QuizAttempt $attempt)
+    public function submit(Request $request, QuizAttempt $attempt, CourseCompletionService $completionService)
     {
         if ($attempt->user_id !== auth()->id()) {
             abort(403);
@@ -115,7 +116,12 @@ class QuizController extends Controller
         }
 
         $quiz = $attempt->quiz()->with(['questions.skill.section.subject'])->firstOrFail();
-        $answers = $request->input('answers', []);
+        $answers = $request->input('answers');
+        if (is_string($answers)) {
+            $answers = json_decode($answers, true) ?? [];
+        } else {
+            $answers = $answers ?? [];
+        }
         $timeTaken = $request->input('time_taken_seconds', 0);
 
         $score = 0;
@@ -129,7 +135,25 @@ class QuizController extends Controller
         $reviewData = [];
         foreach ($quiz->questions as $question) {
             $selected = $answers[$question->id] ?? null;
-            $isCorrect = $selected !== null && (string) $selected === (string) $question->correct_answer;
+            $isCorrect = false;
+            if ($selected !== null) {
+                if (isset($question->options[$selected])) {
+                    $option = $question->options[$selected];
+                    if (is_array($option)) {
+                        $isCorrect = (!empty($option['is_correct']) && ($option['is_correct'] === true || $option['is_correct'] === 1 || $option['is_correct'] === '1' || $option['is_correct'] === 'true'));
+                        if (!$isCorrect && isset($option['text'])) {
+                            $isCorrect = (string)$option['text'] === (string)$question->correct_answer;
+                        }
+                        if (!$isCorrect && isset($option['text_ar'])) {
+                            $isCorrect = (string)$option['text_ar'] === (string)$question->correct_answer;
+                        }
+                    } else {
+                        $isCorrect = (string)$option === (string)$question->correct_answer;
+                    }
+                } else {
+                    $isCorrect = (string)$selected === (string)$question->correct_answer;
+                }
+            }
 
             if ($selected === null) {
                 $unansweredCount++;
@@ -248,6 +272,10 @@ class QuizController extends Controller
             ],
         ]);
 
+        if ($quiz->course_id) {
+            $completionService->checkAndComplete(auth()->id(), $quiz->course_id);
+        }
+
         return redirect()->route('student.quiz.result', ['quiz' => $quiz->id, 'attempt' => $attempt->id]);
     }
 
@@ -274,7 +302,25 @@ class QuizController extends Controller
         $reviewData = [];
         foreach ($questions as $question) {
             $selected = $attempt->answers[$question->id] ?? null;
-            $isCorrect = $selected !== null && (string) $selected === (string) $question->correct_answer;
+            $isCorrect = false;
+            if ($selected !== null) {
+                if (isset($question->options[$selected])) {
+                    $option = $question->options[$selected];
+                    if (is_array($option)) {
+                        $isCorrect = (!empty($option['is_correct']) && ($option['is_correct'] === true || $option['is_correct'] === 1 || $option['is_correct'] === '1' || $option['is_correct'] === 'true'));
+                        if (!$isCorrect && isset($option['text'])) {
+                            $isCorrect = (string)$option['text'] === (string)$question->correct_answer;
+                        }
+                        if (!$isCorrect && isset($option['text_ar'])) {
+                            $isCorrect = (string)$option['text_ar'] === (string)$question->correct_answer;
+                        }
+                    } else {
+                        $isCorrect = (string)$option === (string)$question->correct_answer;
+                    }
+                } else {
+                    $isCorrect = (string)$selected === (string)$question->correct_answer;
+                }
+            }
             $reviewData[] = [
                 'id' => $question->id,
                 'text' => $question->question_text_ar ?? $question->question_text,

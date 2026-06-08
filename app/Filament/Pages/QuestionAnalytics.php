@@ -8,8 +8,8 @@ use App\Models\Quiz;
 use BackedEnum;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Concerns\InteractsWithForms;
-use Filament\Forms\Form;
 use Filament\Pages\Page;
+use Filament\Schemas\Schema;
 
 class QuestionAnalytics extends Page
 {
@@ -32,9 +32,9 @@ class QuestionAnalytics extends Page
         $this->form->fill();
     }
 
-    public function form(Form $form): Form
+    public function form(Schema $schema): Schema
     {
-        return $form
+        return $schema
             ->schema([
                 Select::make('quiz_id')
                     ->label('اختر الاختبار')

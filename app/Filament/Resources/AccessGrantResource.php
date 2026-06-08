@@ -6,8 +6,8 @@ use App\Filament\Resources\AccessGrantResource\Pages;
 use App\Models\AccessGrant;
 use BackedEnum;
 use Filament\Forms;
-use Filament\Forms\Form;
 use Filament\Resources\Resource;
+use Filament\Schemas\Schema;
 use Filament\Actions\EditAction;
 use Filament\Tables;
 use Filament\Tables\Table;
@@ -23,6 +23,51 @@ class AccessGrantResource extends Resource
     protected static ?string $pluralLabel = 'صلاحيات الوصول';
 
     protected static ?string $label = 'صلاحية وصول';
+
+    public static function form(Schema $schema): Schema
+    {
+        return $schema
+            ->schema([
+                Forms\Components\Select::make('user_id')
+                    ->label('المستخدم')
+                    ->relationship('user', 'name')
+                    ->searchable()
+                    ->preload()
+                    ->required(),
+                Forms\Components\Select::make('course_id')
+                    ->label('الكورس')
+                    ->relationship('course', 'title_ar')
+                    ->searchable()
+                    ->preload()
+                    ->required(),
+                Forms\Components\Select::make('grant_type')
+                    ->label('نوع المنح')
+                    ->options([
+                        'purchase' => 'شراء',
+                        'admin' => 'منح إداري',
+                        'promo' => 'ترويجي',
+                        'trial' => 'تجريبي',
+                    ])
+                    ->required()
+                    ->default('admin'),
+                Forms\Components\Select::make('status')
+                    ->label('الحالة')
+                    ->options([
+                        'active' => 'نشط',
+                        'expired' => 'منتهي',
+                        'revoked' => 'ملغي',
+                    ])
+                    ->required()
+                    ->default('active'),
+                Forms\Components\DateTimePicker::make('starts_at')
+                    ->label('تاريخ البداية')
+                    ->required()
+                    ->default(now()),
+                Forms\Components\DateTimePicker::make('expires_at')
+                    ->label('تاريخ الانتهاء')
+                    ->default(now()->addYear()),
+            ]);
+    }
 
     public static function table(Table $table): Table
     {
@@ -76,6 +121,7 @@ class AccessGrantResource extends Resource
     {
         return [
             'index' => Pages\ListAccessGrants::route('/'),
+            'create' => Pages\CreateAccessGrant::route('/create'),
             'edit' => Pages\EditAccessGrant::route('/{record}/edit'),
         ];
     }

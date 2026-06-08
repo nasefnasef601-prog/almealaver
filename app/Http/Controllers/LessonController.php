@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Course;
 use App\Models\Lesson;
 use App\Models\LessonCompletion;
+use App\Services\CourseCompletionService;
 use Illuminate\Http\Request;
 
 class LessonController extends Controller
@@ -36,10 +37,14 @@ class LessonController extends Controller
         $prevLesson = $currentIndex > 0 ? $allLessons[$currentIndex - 1] : null;
         $nextLesson = $currentIndex < $allLessons->count() - 1 ? $allLessons[$currentIndex + 1] : null;
 
-        return view('student.lesson', compact('course', 'lesson', 'isCompleted', 'prevLesson', 'nextLesson', 'currentIndex', 'allLessons'));
+        $courseCompletion = CourseCompletion::where('user_id', $user->id)
+            ->where('course_id', $course->id)
+            ->first();
+
+        return view('student.lesson', compact('course', 'lesson', 'isCompleted', 'prevLesson', 'nextLesson', 'currentIndex', 'allLessons', 'courseCompletion'));
     }
 
-    public function complete(Course $course, Lesson $lesson)
+    public function complete(Course $course, Lesson $lesson, CourseCompletionService $completionService)
     {
         if ($lesson->course_id !== $course->id) {
             abort(404);
@@ -61,6 +66,8 @@ class LessonController extends Controller
             'lesson_id' => $lesson->id,
             'course_id' => $course->id,
         ]);
+
+        $completionService->checkAndComplete($user->id, $course->id);
 
         return back()->with('success', 'تم إكمال الدرس ✓');
     }

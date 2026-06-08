@@ -17,9 +17,11 @@ use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
 use Filament\Actions\EditAction;
 use Filament\Tables;
-use Filament\Tables\Actions\Action;
-use Filament\Tables\Actions\BulkAction;
+use Filament\Actions\Action;
+use Filament\Actions\BulkAction;
 use Filament\Tables\Table;
+use Filament\Actions\BulkActionGroup;
+use Filament\Actions\DeleteBulkAction;
 
 class UserResource extends Resource
 {
@@ -39,14 +41,24 @@ class UserResource extends Resource
             ->schema([
                 Forms\Components\TextInput::make('name')
                     ->label('الاسم')
-                    ->required(),
+                    ->required()
+                    ->maxLength(255),
                 Forms\Components\TextInput::make('email')
                     ->label('البريد الإلكتروني')
                     ->email()
                     ->required()
-                    ->unique(ignoreRecord: true),
+                    ->unique(ignoreRecord: true)
+                    ->maxLength(255),
                 Forms\Components\TextInput::make('phone')
-                    ->label('رقم الجوال'),
+                    ->label('رقم الجوال')
+                    ->tel()
+                    ->maxLength(20),
+                Forms\Components\Select::make('school_id')
+                    ->label('المدرسة')
+                    ->relationship('school', 'name_ar')
+                    ->searchable()
+                    ->preload()
+                    ->nullable(),
                 Forms\Components\Select::make('role')
                     ->label('الدور')
                     ->options([
@@ -56,12 +68,22 @@ class UserResource extends Resource
                         'supervisor' => 'مشرف',
                         'parent' => 'ولي أمر',
                     ])
-                    ->required(),
+                    ->required()
+                    ->reactive()
+                    ->afterStateUpdated(fn (callable $set) => $set('linked_students', [])),
                 Forms\Components\TextInput::make('password')
                     ->label('كلمة المرور')
                     ->password()
                     ->dehydrated(fn ($state) => filled($state))
-                    ->required(fn (string $context): bool => $context === 'create'),
+                    ->required(fn (string $context): bool => $context === 'create')
+                    ->minLength(8),
+                Forms\Components\Select::make('linked_students')
+                    ->label('الأبناء (لولي الأمر)')
+                    ->multiple()
+                    ->relationship('linkedStudents', 'name')
+                    ->visible(fn (callable $get) => $get('role') === 'parent')
+                    ->searchable()
+                    ->preload(),
                 Forms\Components\Toggle::make('is_active')
                     ->label('نشط')
                     ->default(true),
@@ -125,26 +147,18 @@ class UserResource extends Resource
                     ]),
             ])
             ->actions([
-                EditAction::make()->label('تعديل'),
-                    Action::make('view_profile')
-                    ->label('الملف الشخصي')
-                    ->icon('heroicon-o-eye')
-                    ->url(fn (User $record) => $record->role === 'student'
-                        ? route('student.profile')
-                        : null)
-                    ->openUrlInNewTab()
-                    ->visible(fn (User $record) => $record->role === 'student'),
-                    Action::make('student_report')
+                Action::make('student_report')
                     ->label('تقرير الطالب')
                     ->icon('heroicon-o-chart-bar')
                     ->url(fn (User $record) => $record->role === 'student'
                         ? StudentDetail::getUrl(['id' => $record->id])
                         : null)
                     ->visible(fn (User $record) => $record->role === 'student'),
+                EditAction::make()->label('تعديل'),
             ])
             ->bulkActions([
-                Tables\Actions\BulkActionGroup::make([
-                    Tables\Actions\DeleteBulkAction::make()->label('حذف المحدد'),
+                BulkActionGroup::make([
+                    DeleteBulkAction::make()->label('حذف المحدد'),
                     BulkAction::make('enroll_course')
                         ->label('تسجيل في كورس')
                         ->icon('heroicon-o-academic-cap')

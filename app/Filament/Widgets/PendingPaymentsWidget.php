@@ -3,6 +3,7 @@
 namespace App\Filament\Widgets;
 
 use App\Models\PaymentRequest;
+use Filament\Actions\Action;
 use Filament\Tables;
 use Filament\Tables\Table;
 use Filament\Widgets\TableWidget as BaseWidget;
@@ -41,10 +42,10 @@ class PendingPaymentsWidget extends BaseWidget
                     ->dateTime('Y-m-d'),
             ])
             ->actions([
-                Tables\Actions\Action::make('review')
+                Action::make('review')
                     ->label('مراجعة')
                     ->icon('heroicon-o-eye')
-                    ->url(fn(PaymentRequest $record): string => route('filament.admin.resources.payment-requests.edit', $record)),
+                    ->url(fn(PaymentRequest $record): string => route('filament.admin.resources.payment-requests.index')),
             ]);
     }
 }

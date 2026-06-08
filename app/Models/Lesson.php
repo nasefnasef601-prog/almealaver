@@ -42,4 +42,9 @@ class Lesson extends Model
     {
         return $this->hasMany(LessonCompletion::class);
     }
+
+    public function questions(): HasMany
+    {
+        return $this->hasMany(LessonQuestion::class);
+    }
 }

@@ -236,7 +236,7 @@
                             @else
                                 <div class="w-5 h-5 shrink-0"></div>
                             @endif
-                            <span class="{{ !$isSelected && $isCorrect ? 'text-emerald-700 font-medium' : ($isSelected && !$isCorrect ? 'text-red-700' : 'text-gray-600') }}">{!! $opt !!}</span>
+                            <span class="{{ !$isSelected && $isCorrect ? 'text-emerald-700 font-medium' : ($isSelected && !$isCorrect ? 'text-red-700' : 'text-gray-600') }}">{!! is_array($opt) ? ($opt['text_ar'] ?? $opt['text'] ?? '') : $opt !!}</span>
                         </div>
                     @endforeach
                 </div>

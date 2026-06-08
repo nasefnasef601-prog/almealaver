@@ -11,6 +11,8 @@ use Filament\Schemas\Schema;
 use Filament\Actions\EditAction;
 use Filament\Tables;
 use Filament\Tables\Table;
+use Filament\Actions\BulkActionGroup;
+use Filament\Actions\DeleteBulkAction;
 
 class QuestionResource extends Resource
 {
@@ -58,12 +60,29 @@ class QuestionResource extends Resource
                 Forms\Components\Textarea::make('question_text')
                     ->label('نص السؤال (إنجليزي)')
                     ->rows(3),
-                Forms\Components\KeyValue::make('options')
+                Forms\Components\Repeater::make('options')
                     ->label('الخيارات')
-                    ->keyLabel('المفتاح')
-                    ->valueLabel('القيمة'),
-                Forms\Components\TextInput::make('correct_answer')
+                    ->schema([
+                        Forms\Components\TextInput::make('text_ar')
+                            ->label('النص (عربي)'),
+                        Forms\Components\TextInput::make('text')
+                            ->label('النص (إنجليزي)'),
+                        Forms\Components\Toggle::make('is_correct')
+                            ->label('الإجابة الصحيحة')
+                            ->default(false),
+                    ])
+                    ->defaultItems(4)
+                    ->maxItems(6)
+                    ->addable(true)
+                    ->deletable(true)
+                    ->visible(fn (callable $get) => $get('question_type') === 'mcq'),
+                Forms\Components\Select::make('correct_answer')
                     ->label('الإجابة الصحيحة')
+                    ->options([
+                        'true' => 'صح',
+                        'false' => 'خطأ',
+                    ])
+                    ->visible(fn (callable $get) => $get('question_type') === 'true_false')
                     ->required(),
                 Forms\Components\Textarea::make('explanation_ar')
                     ->label('الشرح (عربي)')
@@ -154,8 +173,8 @@ class QuestionResource extends Resource
                 Tables\Actions\DeleteAction::make()->label('حذف'),
             ])
             ->bulkActions([
-                Tables\Actions\BulkActionGroup::make([
-                    Tables\Actions\DeleteBulkAction::make()->label('حذف المحدد'),
+                BulkActionGroup::make([
+                    DeleteBulkAction::make()->label('حذف المحدد'),
                 ]),
             ]);
     }

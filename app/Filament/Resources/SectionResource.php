@@ -11,6 +11,8 @@ use Filament\Schemas\Schema;
 use Filament\Actions\EditAction;
 use Filament\Tables;
 use Filament\Tables\Table;
+use Filament\Actions\BulkActionGroup;
+use Filament\Actions\DeleteBulkAction;
 
 class SectionResource extends Resource
 {
@@ -84,8 +86,8 @@ class SectionResource extends Resource
                 EditAction::make()->label('تعديل'),
             ])
             ->bulkActions([
-                Tables\Actions\BulkActionGroup::make([
-                    Tables\Actions\DeleteBulkAction::make()->label('حذف المحدد'),
+                BulkActionGroup::make([
+                    DeleteBulkAction::make()->label('حذف المحدد'),
                 ]),
             ]);
     }

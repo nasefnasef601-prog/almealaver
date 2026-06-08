@@ -7,7 +7,7 @@
     $user = Auth::user();
     $progress = SkillProgress::where('user_id', $user->id)
         ->with('skill.section.subject')
-        ->orderByRaw("FIELD(status, 'weak', 'average', 'good', 'mastered')")
+        ->orderByRaw("CASE status WHEN 'weak' THEN 1 WHEN 'average' THEN 2 WHEN 'good' THEN 3 WHEN 'mastered' THEN 4 ELSE 5 END")
         ->orderBy('mastery')
         ->get();
 

@@ -24,26 +24,26 @@ class RoleAndPermissionSeeder extends Seeder
         ];
 
         foreach ($permissions as $permission) {
-            Permission::create(['guard_name' => 'web', 'name' => $permission]);
+            Permission::findOrCreate($permission, 'web');
         }
 
-        $admin = Role::create(['guard_name' => 'web', 'name' => 'admin']);
+        $admin = Role::findOrCreate('admin', 'web');
         $admin->givePermissionTo(Permission::all());
 
-        $teacher = Role::create(['guard_name' => 'web', 'name' => 'teacher']);
+        $teacher = Role::findOrCreate('teacher', 'web');
         $teacher->givePermissionTo([
             'manage-courses', 'manage-lessons', 'manage-quizzes', 'manage-questions',
             'manage-skills', 'manage-library', 'manage-live-sessions',
         ]);
 
-        $supervisor = Role::create(['guard_name' => 'web', 'name' => 'supervisor']);
+        $supervisor = Role::findOrCreate('supervisor', 'web');
         $supervisor->givePermissionTo([
             'manage-courses', 'manage-lessons', 'manage-quizzes', 'manage-questions',
             'manage-users', 'manage-schools', 'manage-groups',
             'manage-access-grants', 'view-reports',
         ]);
 
-        $student = Role::create(['guard_name' => 'web', 'name' => 'student']);
-        $parent = Role::create(['guard_name' => 'web', 'name' => 'parent']);
+        Role::findOrCreate('student', 'web');
+        Role::findOrCreate('parent', 'web');
     }
 }

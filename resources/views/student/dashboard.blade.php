@@ -24,6 +24,7 @@
         ->take(6)
         ->get();
     $totalCourses = Course::whereIn('id', $enrolledCourseIds)->orWhere('price', 0)->count();
+    $completedCourses = \App\Models\CourseCompletion::where('user_id', $user->id)->count();
     $attempts = QuizAttempt::where('user_id', $user->id)->count();
     $avgScore = QuizResult::where('user_id', $user->id)->avg('score_percentage');
     $payments = PaymentRequest::where('user_id', $user->id)->count();
@@ -108,21 +109,25 @@
     {{-- ==================== OVERVIEW ==================== --}}
     <div x-show="tab === 'overview'" x-transition>
         {{-- Stats Cards --}}
-        <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+        <div class="grid grid-cols-2 md:grid-cols-5 gap-4 mb-8">
             <div class="bg-gradient-to-br from-blue-500 to-blue-600 text-white rounded-2xl p-6 shadow-lg">
                 <p class="text-blue-100 text-sm font-medium">الكورسات المسجلة</p>
                 <p class="text-3xl font-black mt-1">{{ $totalCourses }}</p>
             </div>
             <div class="bg-gradient-to-br from-emerald-500 to-emerald-600 text-white rounded-2xl p-6 shadow-lg">
-                <p class="text-emerald-100 text-sm font-medium">الاختبارات المحاولة</p>
-                <p class="text-3xl font-black mt-1">{{ $attempts }}</p>
+                <p class="text-emerald-100 text-sm font-medium">الكورسات المكتملة</p>
+                <p class="text-3xl font-black mt-1">{{ $completedCourses }}</p>
             </div>
             <div class="bg-gradient-to-br from-amber-500 to-orange-500 text-white rounded-2xl p-6 shadow-lg">
-                <p class="text-amber-100 text-sm font-medium">متوسط النتيجة</p>
-                <p class="text-3xl font-black mt-1">{{ $avgScore ? number_format($avgScore, 1) : '—' }}%</p>
+                <p class="text-amber-100 text-sm font-medium">الاختبارات المحاولة</p>
+                <p class="text-3xl font-black mt-1">{{ $attempts }}</p>
             </div>
             <div class="bg-gradient-to-br from-purple-500 to-purple-600 text-white rounded-2xl p-6 shadow-lg">
-                <p class="text-purple-100 text-sm font-medium">الدروس المكتملة</p>
+                <p class="text-purple-100 text-sm font-medium">متوسط النتيجة</p>
+                <p class="text-3xl font-black mt-1">{{ $avgScore ? number_format($avgScore, 1) : '—' }}%</p>
+            </div>
+            <div class="bg-gradient-to-br from-rose-500 to-rose-600 text-white rounded-2xl p-6 shadow-lg">
+                <p class="text-rose-100 text-sm font-medium">الدروس المكتملة</p>
                 <p class="text-3xl font-black mt-1">{{ $completedLessons }}</p>
             </div>
         </div>

@@ -379,7 +379,7 @@ class StudentDashboardController extends Controller
         $timeLimit = (int)$request->input('time_limit', 20);
 
         // Build pool query
-        $query = Question::query()->where('status', 'active');
+        $query = Question::query()->whereIn('status', ['active', 'approved']);
         if ($pathId) {
             $query->whereHas('subject', function($q) use ($pathId) {
                 $q->where('path_id', $pathId);

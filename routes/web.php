@@ -124,6 +124,14 @@ HTML, 200, ['Content-Type' => 'text/html; charset=UTF-8']);
 
 Route::get('/search/query', [\App\Http\Controllers\SearchController::class, 'query'])->name('search.query');
 
+Route::get('/library-items/{item}/open', function (App\Models\LibraryItem $item) {
+    abort_unless($item->show_on_platform && $item->approval_status === 'approved' && $item->url, 404);
+
+    $item->increment('downloads');
+
+    return redirect()->away($item->url);
+})->name('library-items.open');
+
 // Public path/subject pages
 Route::get('/category/{path}', function (App\Models\Path $path) {
     $subjectParam = request('subject');

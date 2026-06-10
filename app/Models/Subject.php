@@ -41,4 +41,9 @@ class Subject extends Model
     {
         return $this->hasMany(Course::class);
     }
+
+    public function libraryItems(): HasMany
+    {
+        return $this->hasMany(LibraryItem::class);
+    }
 }

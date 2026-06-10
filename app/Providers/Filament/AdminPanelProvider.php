@@ -28,6 +28,7 @@ use App\Filament\Resources\DiscountCodeResource;
 use App\Filament\Resources\FaqResource;
 use App\Filament\Resources\GroupResource;
 use App\Filament\Resources\LessonResource;
+use App\Filament\Resources\LibraryItemResource;
 use App\Filament\Resources\NotificationResource;
 use App\Filament\Resources\PathResource;
 use App\Filament\Resources\PaymentRequestResource;
@@ -81,6 +82,7 @@ class AdminPanelProvider extends PanelProvider
                 FaqResource::class,
                 GroupResource::class,
                 LessonResource::class,
+                LibraryItemResource::class,
                 NotificationResource::class,
                 PathResource::class,
                 PaymentRequestResource::class,

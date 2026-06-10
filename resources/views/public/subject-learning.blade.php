@@ -5,6 +5,7 @@
 @php
     use App\Models\Quiz;
     use App\Models\Lesson;
+    use App\Models\LibraryItem;
     $user = Auth::user();
 
     // Courses
@@ -28,6 +29,13 @@
         ->latest()
         ->get();
 
+    $libraryItems = LibraryItem::query()
+        ->visibleOnPlatform()
+        ->where('path_id', $path->id)
+        ->where('subject_id', $subject->id)
+        ->latest()
+        ->get();
+
     $tabAliases = [
         'foundation' => 'skills',
         'questions' => 'training',
@@ -42,6 +50,7 @@
     $firstTrainingQuiz = $trainingQuizzes->first();
     $firstMockExam = $mockExams->first();
     $firstCourse = $courses->first();
+    $firstLibraryItem = $libraryItems->first();
     $firstLibraryLesson = $libraryLessons->first();
 
     $nextAction = null;
@@ -76,6 +85,14 @@
             'description' => 'تابع محتوى منظمًا بالدروس والاختبارات المرتبطة.',
             'href' => route('course-detail', $firstCourse->id),
             'tone' => 'indigo',
+        ];
+    } elseif ($requestedTab === 'library' && $firstLibraryItem?->url) {
+        $nextAction = [
+            'label' => 'افتح الملف',
+            'title' => $firstLibraryItem->title,
+            'description' => 'راجع ملف دعم سريع قبل التدريب أو الاختبار.',
+            'href' => $firstLibraryItem->url,
+            'tone' => 'rose',
         ];
     } elseif ($requestedTab === 'library' && $firstLibraryLesson?->content_url) {
         $nextAction = [
@@ -268,12 +285,28 @@
 
         {{-- Library Tab --}}
         <div x-show="tab === 'library'" x-transition>
-            @if($libraryLessons->isEmpty())
+            @if($libraryItems->isEmpty() && $libraryLessons->isEmpty())
                 <div class="bg-white rounded-3xl border border-gray-100 shadow-sm p-12 text-center">
                     <p class="text-gray-500">لا توجد ملفات في المكتبة بعد</p>
                 </div>
             @else
                 <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    @foreach($libraryItems as $item)
+                        <div class="bg-white rounded-3xl border border-gray-200 shadow-sm p-5 hover:shadow-lg transition-all">
+                            <div class="flex items-center gap-3 mb-3">
+                                <div class="w-10 h-10 rounded-xl bg-rose-100 flex items-center justify-center">
+                                    <svg class="w-5 h-5 text-rose-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z"/></svg>
+                                </div>
+                                <div>
+                                    <p class="font-bold text-gray-900 text-sm">{{ $item->title }}</p>
+                                    <p class="text-xs text-gray-400">{{ strtoupper($item->type) }}{{ $item->size ? ' · ' . $item->size : '' }}</p>
+                                </div>
+                            </div>
+                            @if($item->url)
+                                <a href="{{ $item->url }}" target="_blank" rel="noopener" class="block text-center bg-rose-50 hover:bg-rose-100 text-rose-700 py-2 rounded-xl font-bold text-sm transition-colors">فتح الملف</a>
+                            @endif
+                        </div>
+                    @endforeach
                     @foreach($libraryLessons as $lesson)
                         <div class="bg-white rounded-3xl border border-gray-200 shadow-sm p-5 hover:shadow-lg transition-all">
                             <div class="flex items-center gap-3 mb-3">

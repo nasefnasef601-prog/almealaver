@@ -31,4 +31,9 @@ class Section extends Model
     {
         return $this->hasMany(Skill::class);
     }
+
+    public function libraryItems(): HasMany
+    {
+        return $this->hasMany(LibraryItem::class);
+    }
 }

@@ -25,4 +25,9 @@ class Path extends Model
     {
         return $this->hasMany(Subject::class);
     }
+
+    public function libraryItems(): HasMany
+    {
+        return $this->hasMany(LibraryItem::class);
+    }
 }

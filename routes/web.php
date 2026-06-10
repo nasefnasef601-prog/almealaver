@@ -126,6 +126,28 @@ Route::get('/search/query', [\App\Http\Controllers\SearchController::class, 'que
 
 // Public path/subject pages
 Route::get('/category/{path}', function (App\Models\Path $path) {
+    $subjectParam = request('subject');
+
+    if ($subjectParam) {
+        $subject = $path->subjects()
+            ->where(function ($query) use ($subjectParam) {
+                $query->whereKey($subjectParam)
+                    ->orWhere('slug', $subjectParam);
+            })
+            ->first();
+
+        if ($subject) {
+            $query = array_filter([
+                'tab' => request('tab'),
+                'level' => request('level'),
+            ]);
+
+            return redirect()->route('category.subject', ['path' => $path, 'subject' => $subject])
+                ->withFragment('')
+                ->setTargetUrl(route('category.subject', ['path' => $path, 'subject' => $subject]) . ($query ? '?' . http_build_query($query) : ''));
+        }
+    }
+
     return view('public.category', ['path' => $path]);
 })->name('category');
 

@@ -27,10 +27,80 @@
         ->whereNotNull('content_url')
         ->latest()
         ->get();
+
+    $tabAliases = [
+        'foundation' => 'skills',
+        'questions' => 'training',
+        'banks' => 'training',
+        'exams' => 'tests',
+    ];
+    $requestedTab = request('tab', 'skills');
+    $requestedTab = $tabAliases[$requestedTab] ?? $requestedTab;
+    $requestedTab = in_array($requestedTab, ['courses', 'skills', 'training', 'tests', 'library'], true) ? $requestedTab : 'skills';
+
+    $firstSkill = $skills->first();
+    $firstTrainingQuiz = $trainingQuizzes->first();
+    $firstMockExam = $mockExams->first();
+    $firstCourse = $courses->first();
+    $firstLibraryLesson = $libraryLessons->first();
+
+    $nextAction = null;
+    if ($requestedTab === 'skills' && $firstSkill) {
+        $nextAction = [
+            'label' => 'ابدأ التأسيس',
+            'title' => $firstSkill->name_ar ?? $firstSkill->name,
+            'description' => 'ابدأ بأول مهارة متاحة، ثم انتقل للتدريب بعد المراجعة.',
+            'href' => auth()->check() ? route('student.skill.detail', $firstSkill->id) : route('login'),
+            'tone' => 'blue',
+        ];
+    } elseif ($requestedTab === 'training' && $firstTrainingQuiz) {
+        $nextAction = [
+            'label' => 'ابدأ التدريب',
+            'title' => $firstTrainingQuiz->title_ar ?? $firstTrainingQuiz->title,
+            'description' => 'حل تدريبًا قصيرًا ثم راجع النتيجة والمهارات الضعيفة.',
+            'href' => auth()->check() ? route('student.quiz.show', $firstTrainingQuiz->id) : route('login'),
+            'tone' => 'emerald',
+        ];
+    } elseif ($requestedTab === 'tests' && $firstMockExam) {
+        $nextAction = [
+            'label' => 'ابدأ الاختبار',
+            'title' => $firstMockExam->title_ar ?? $firstMockExam->title,
+            'description' => 'اختبر جاهزيتك في تجربة أقرب للاختبار الحقيقي.',
+            'href' => auth()->check() ? route('student.quiz.show', $firstMockExam->id) : route('login'),
+            'tone' => 'amber',
+        ];
+    } elseif ($requestedTab === 'courses' && $firstCourse) {
+        $nextAction = [
+            'label' => 'افتح الدورة',
+            'title' => $firstCourse->title_ar ?? $firstCourse->title,
+            'description' => 'تابع محتوى منظمًا بالدروس والاختبارات المرتبطة.',
+            'href' => route('course-detail', $firstCourse->id),
+            'tone' => 'indigo',
+        ];
+    } elseif ($requestedTab === 'library' && $firstLibraryLesson?->content_url) {
+        $nextAction = [
+            'label' => 'افتح الملف',
+            'title' => $firstLibraryLesson->title_ar ?? $firstLibraryLesson->title,
+            'description' => 'راجع ملف دعم سريع قبل التدريب أو الاختبار.',
+            'href' => $firstLibraryLesson->content_url,
+            'tone' => 'rose',
+        ];
+    }
 @endphp
 
 @section('content')
-<div x-data="{ tab: 'courses' }" class="bg-gray-50 min-h-screen">
+<div
+    x-data="{
+        tab: @js($requestedTab),
+        setTab(value) {
+            this.tab = value;
+            const url = new URL(window.location.href);
+            url.searchParams.set('tab', value);
+            window.history.replaceState({}, '', url.toString());
+        }
+    }"
+    class="bg-gray-50 min-h-screen"
+>
     {{-- Header --}}
     <section class="bg-gradient-to-b from-blue-900 to-indigo-900 text-white py-10">
         <div class="max-w-7xl mx-auto px-4">
@@ -44,6 +114,27 @@
     </section>
 
     <div class="max-w-7xl mx-auto px-4 py-8">
+        @if($nextAction)
+            <div class="mb-6 rounded-2xl border border-gray-200 bg-white p-5 shadow-sm">
+                <div class="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+                    <div>
+                        <p class="text-xs font-black text-gray-400">الخطوة التالية</p>
+                        <h2 class="mt-1 text-lg font-black text-gray-900">{{ $nextAction['title'] }}</h2>
+                        <p class="mt-1 text-sm text-gray-500">{{ $nextAction['description'] }}</p>
+                    </div>
+                    <a href="{{ $nextAction['href'] }}"
+                       class="inline-flex items-center justify-center rounded-xl px-5 py-3 text-sm font-black text-white transition-colors
+                           {{ $nextAction['tone'] === 'emerald' ? 'bg-emerald-600 hover:bg-emerald-700' : '' }}
+                           {{ $nextAction['tone'] === 'amber' ? 'bg-amber-500 hover:bg-amber-600' : '' }}
+                           {{ $nextAction['tone'] === 'indigo' ? 'bg-indigo-600 hover:bg-indigo-700' : '' }}
+                           {{ $nextAction['tone'] === 'rose' ? 'bg-rose-600 hover:bg-rose-700' : '' }}
+                           {{ $nextAction['tone'] === 'blue' ? 'bg-blue-600 hover:bg-blue-700' : '' }}"
+                       @if($requestedTab === 'library') target="_blank" rel="noopener" @endif>
+                        {{ $nextAction['label'] }}
+                    </a>
+                </div>
+            </div>
+        @endif
         {{-- Tabs --}}
         <div class="flex gap-2 overflow-x-auto pb-2 mb-8">
             <button @click="tab = 'courses'" :class="tab === 'courses' ? 'bg-blue-600 text-white shadow-md' : 'bg-white text-gray-600 border border-gray-200 hover:border-blue-300'" class="px-5 py-2.5 rounded-xl font-bold text-sm whitespace-nowrap transition-all shrink-0">الدورات</button>

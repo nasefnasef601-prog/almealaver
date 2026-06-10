@@ -15,6 +15,7 @@ use App\Filament\Pages\ManageHomepage;
 use App\Filament\Pages\QuestionAnalytics;
 use App\Filament\Pages\QuizResults;
 use App\Filament\Pages\Reports;
+use App\Filament\Pages\SchoolDiagnostics;
 use App\Filament\Pages\StudentDetail;
 use App\Filament\Resources\AccessCodeResource;
 use App\Filament\Resources\AccessGrantResource;
@@ -99,6 +100,7 @@ class AdminPanelProvider extends PanelProvider
                 QuestionAnalytics::class,
                 QuizResults::class,
                 Reports::class,
+                SchoolDiagnostics::class,
                 StudentDetail::class,
             ])
             ->widgets([

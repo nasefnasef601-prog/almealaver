@@ -33,10 +33,7 @@ class StudentDashboardController extends Controller
         $tab = $request->input('tab', 'overview');
 
         // Enrolled Course IDs
-        $enrolledCourseIds = AccessGrant::where('user_id', $user->id)
-            ->where('status', 'active')
-            ->pluck('course_id')
-            ->toArray();
+        $enrolledCourseIds = AccessGrant::activeCourseIdsForUser($user->id);
 
         // Enrolled & Free Courses
         $courses = Course::whereIn('id', $enrolledCourseIds)

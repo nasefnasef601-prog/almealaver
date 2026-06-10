@@ -1,0 +1,22 @@
+services:
+  mysql:
+    image: mysql:8.4
+    container_name: almeaa-local-mysql
+    restart: unless-stopped
+    environment:
+      MYSQL_DATABASE: almeaa_local
+      MYSQL_USER: almeaa
+      MYSQL_PASSWORD: local_almeaa_password
+      MYSQL_ROOT_PASSWORD: local_root_password
+    ports:
+      - "3307:3306"
+    volumes:
+      - almeaa_mysql_data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "127.0.0.1", "-ualmeaa", "-plocal_almeaa_password"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+volumes:
+  almeaa_mysql_data:

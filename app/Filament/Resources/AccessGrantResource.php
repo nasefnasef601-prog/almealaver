@@ -40,6 +40,10 @@ class AccessGrantResource extends Resource
                     ->searchable()
                     ->preload()
                     ->required(),
+                Forms\Components\TextInput::make('package_id')
+                    ->label('معرّف الباقة')
+                    ->maxLength(255)
+                    ->nullable(),
                 Forms\Components\Select::make('grant_type')
                     ->label('نوع المنح')
                     ->options([
@@ -79,8 +83,17 @@ class AccessGrantResource extends Resource
                 Tables\Columns\TextColumn::make('course.title_ar')
                     ->label('الكورس')
                     ->searchable(),
+                Tables\Columns\TextColumn::make('package_id')
+                    ->label('الباقة')
+                    ->placeholder('—')
+                    ->toggleable(),
                 Tables\Columns\TextColumn::make('grant_type')
                     ->label('نوع المنح'),
+                Tables\Columns\TextColumn::make('source_type')
+                    ->label('المصدر')
+                    ->badge()
+                    ->placeholder('admin_manual')
+                    ->toggleable(),
                 Tables\Columns\TextColumn::make('status')
                     ->label('الحالة')
                     ->badge()
@@ -103,6 +116,9 @@ class AccessGrantResource extends Resource
                 Tables\Columns\TextColumn::make('expires_at')
                     ->label('تاريخ الانتهاء')
                     ->dateTime(),
+                Tables\Columns\TextColumn::make('idempotency_key')
+                    ->label('مفتاح التكرار')
+                    ->toggleable(isToggledHiddenByDefault: true),
             ])
             ->filters([
                 Tables\Filters\SelectFilter::make('status')
@@ -110,6 +126,15 @@ class AccessGrantResource extends Resource
                         'active' => 'نشط',
                         'expired' => 'منتهي',
                         'revoked' => 'ملغي',
+                    ]),
+                Tables\Filters\SelectFilter::make('source_type')
+                    ->label('المصدر')
+                    ->options([
+                        'admin_manual' => 'إداري يدوي',
+                        'payment_request' => 'طلب دفع',
+                        'payment_webhook' => 'Webhook دفع',
+                        'access_code' => 'كود وصول',
+                        'membership' => 'اشتراك',
                     ]),
             ])
             ->actions([

@@ -128,6 +128,8 @@ class PaymentRequestResource extends Resource
                     ->modalDescription('هل أنت متأكد من الموافقة على طلب الدفع هذا؟')
                     ->modalSubmitActionLabel('نعم، موافقة')
                     ->action(function (PaymentRequest $record) {
+                        $record->loadMissing('course.subject');
+
                         if ($record->status !== 'pending_manual_review') {
                             Notification::make()->danger()->title('تمت معالجة هذا الطلب مسبقًا.')->send();
                             return;
@@ -142,9 +144,23 @@ class PaymentRequestResource extends Resource
                         AccessGrant::create([
                             'user_id' => $record->user_id,
                             'course_id' => $record->course_id,
+                            'course_ids' => $record->course_id ? [(string) $record->course_id] : [],
+                            'content_types' => ['courses'],
+                            'path_ids' => $record->course?->subject?->path_id ? [(string) $record->course->subject->path_id] : [],
+                            'subject_ids' => $record->course?->subject_id ? [(string) $record->course->subject_id] : [],
+                            'source_type' => 'payment_request',
+                            'source_id' => 'payment_request:' . $record->id,
+                            'idempotency_key' => 'payment_request:' . $record->id,
+                            'metadata' => [
+                                'source' => 'filament_payment_request',
+                                'payment_request_id' => $record->id,
+                                'amount' => $record->amount,
+                                'payment_method' => $record->payment_method,
+                            ],
                             'grant_type' => 'purchase',
                             'status' => 'active',
                             'granted_by' => auth()->id(),
+                            'granted_at' => now(),
                             'payment_request_id' => $record->id,
                             'starts_at' => now(),
                             'expires_at' => now()->addYear(),

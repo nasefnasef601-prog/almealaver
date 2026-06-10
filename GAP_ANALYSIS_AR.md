@@ -155,3 +155,34 @@
 - Seeders → نعم (DemoDataSeeder محسّن، بيانات اختبار أكثر)
 - Migrations → لا (كل الجداول موجودة)
 - توثيق → نعم (GAP_ANALYSIS، DEPLOYMENT_GUIDE، PRODUCTION_CHECKLIST)
+## Update 2026-06-09
+
+- AccessGrant now carries scope/provenance fields (`source_type`, `source_id`, `course_ids`, `content_types`, `path_ids`, `subject_ids`, `idempotency_key`, `metadata`) and the student access checks consume `course_ids` as well as `course_id`.
+- Payment approval and manual admin grants now persist the old-style scope provenance instead of creating bare course-only grants.
+- Public barcode tests are now implemented as a first Laravel pass with public show/submit routes, submissions, and Filament management.
+- Remaining major gaps are still the old-school B2B package/access-code flows, the richer operational/AI layers from the reference app, and deeper visual parity across role dashboards.
+
+## Update 2026-06-10
+
+- Public barcode test gap moved from "missing" to "first pass implemented and locally verified".
+- Evidence:
+  - `GET /barcode-test/local-demo` returned 200 locally.
+  - Public submission returned 200 and saved/displayed a result.
+  - `PublicBarcodeTestFlowTest` passed with 7 assertions.
+- Still needed before claiming full parity:
+  - Import/mapping path from the old Node barcode tests, if existing production test data must be migrated.
+  - More admin UX for submissions/reporting.
+  - Visual comparison against the old React public barcode test page.
+
+## Update 2026-06-10 - B2B Packages and Access Codes
+
+- Added first Laravel pass for the old B2B package/access-code ecosystem:
+  - `b2b_packages`
+  - `access_codes`
+  - `access_code_redemptions`
+  - student redemption page at `/student/access-code`
+  - Filament resources for package and code management
+- `AccessCodeRedemptionTest` passed with 9 assertions.
+- Gap status:
+  - B2B/access-code moved from "missing" to "first pass implemented".
+  - Bulk code generation, school/class/supervisor reporting, and deeper old-flow parity remain open.

@@ -170,22 +170,39 @@ class UserResource extends Resource
                                 ->searchable(),
                         ])
                         ->action(function (array $data, $records) {
-                            $course = Course::find($data['course_id']);
+                            $course = Course::with('subject')->find($data['course_id']);
                             if (!$course) return;
 
                             $count = 0;
                             foreach ($records as $user) {
                                 $exists = AccessGrant::where('user_id', $user->id)
-                                    ->where('course_id', $course->id)
+                                    ->where('status', 'active')
+                                    ->where(function ($query) use ($course) {
+                                        $query->where('course_id', $course->id)
+                                            ->orWhereJsonContains('course_ids', (string) $course->id);
+                                    })
                                     ->exists();
 
                                 if (!$exists) {
                                     AccessGrant::create([
                                         'user_id' => $user->id,
                                         'course_id' => $course->id,
+                                        'course_ids' => [(string) $course->id],
+                                        'content_types' => ['courses'],
+                                        'path_ids' => $course->subject?->path_id ? [(string) $course->subject->path_id] : [],
+                                        'subject_ids' => $course->subject_id ? [(string) $course->subject_id] : [],
+                                        'source_type' => 'admin_manual',
+                                        'source_id' => 'admin_bulk_course:' . $course->id . ':' . $user->id,
+                                        'idempotency_key' => 'admin_manual:' . $user->id . ':' . $course->id,
+                                        'metadata' => [
+                                            'source' => 'filament_bulk_action',
+                                            'scope' => 'course',
+                                            'course_title' => $course->title_ar ?? $course->title,
+                                        ],
                                         'grant_type' => 'admin',
                                         'status' => 'active',
                                         'granted_by' => auth()->id(),
+                                        'granted_at' => now(),
                                         'starts_at' => now(),
                                         'expires_at' => now()->addYear(),
                                     ]);

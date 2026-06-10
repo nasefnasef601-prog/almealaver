@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Quiz;
 use App\Models\QuizAttempt;
 use App\Models\QuizResult;
+use App\Models\AccessGrant;
 use App\Services\CourseCompletionService;
 use Illuminate\Http\Request;
 
@@ -13,9 +14,7 @@ class QuizController extends Controller
     public function index()
     {
         $user = auth()->user();
-        $enrolledCourseIds = \App\Models\AccessGrant::where('user_id', $user->id)
-            ->where('status', 'active')
-            ->pluck('course_id');
+        $enrolledCourseIds = AccessGrant::activeCourseIdsForUser($user->id);
 
         $quizzes = Quiz::with('course', 'questions')
             ->where('is_published', true)

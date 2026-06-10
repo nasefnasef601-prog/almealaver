@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Course;
 use App\Models\Lesson;
 use App\Models\LessonCompletion;
+use App\Models\AccessGrant;
 use App\Services\CourseCompletionService;
 use Illuminate\Http\Request;
 
@@ -17,10 +18,7 @@ class LessonController extends Controller
         }
 
         $user = auth()->user();
-        $hasAccess = $course->is_free || \App\Models\AccessGrant::where('user_id', $user->id)
-            ->where('course_id', $course->id)
-            ->where('status', 'active')
-            ->exists();
+        $hasAccess = $course->is_free || AccessGrant::userHasCourseAccess($user->id, $course->id);
 
         if (!$hasAccess && !$lesson->is_free) {
             return redirect()->route('student.course-detail', $course->id)

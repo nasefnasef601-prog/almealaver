@@ -10,8 +10,38 @@ use Filament\Http\Middleware\DispatchServingFilamentEvent;
 use Filament\Panel;
 use Filament\PanelProvider;
 use Filament\Support\Colors\Color;
+use App\Filament\Pages\ActivityLogs;
+use App\Filament\Pages\ManageHomepage;
+use App\Filament\Pages\QuestionAnalytics;
+use App\Filament\Pages\QuizResults;
+use App\Filament\Pages\Reports;
+use App\Filament\Pages\StudentDetail;
+use App\Filament\Resources\AccessCodeResource;
+use App\Filament\Resources\AccessGrantResource;
+use App\Filament\Resources\B2BPackageResource;
+use App\Filament\Resources\ContactMessageResource;
+use App\Filament\Resources\CourseModuleResource;
+use App\Filament\Resources\CourseResource;
+use App\Filament\Resources\CourseReviewResource;
+use App\Filament\Resources\FaqResource;
+use App\Filament\Resources\GroupResource;
+use App\Filament\Resources\LessonResource;
+use App\Filament\Resources\NotificationResource;
+use App\Filament\Resources\PathResource;
+use App\Filament\Resources\PaymentRequestResource;
+use App\Filament\Resources\PaymentSettingResource\PaymentSettingResource;
+use App\Filament\Resources\PublicBarcodeTestResource;
+use App\Filament\Resources\QuestionResource;
+use App\Filament\Resources\QuizResource;
+use App\Filament\Resources\SchoolResource;
+use App\Filament\Resources\SectionResource;
+use App\Filament\Resources\SkillResource;
+use App\Filament\Resources\SubjectResource;
+use App\Filament\Resources\UserResource;
+use App\Filament\Widgets\CourseEnrollmentsChart;
 use App\Filament\Widgets\LatestActivityWidget;
 use App\Filament\Widgets\PendingPaymentsWidget;
+use App\Filament\Widgets\QuizCompletionChart;
 use App\Filament\Widgets\StatsOverviewWidget;
 use App\Filament\Widgets\TodayActivityWidget;
 use App\Filament\Widgets\UserRegistrationsChart;
@@ -37,10 +67,40 @@ class AdminPanelProvider extends PanelProvider
             ->colors([
                 'primary' => Color::Blue,
             ])
-            ->discoverResources(in: app_path('Filament/Resources'), for: 'App\Filament\Resources')
-            ->discoverPages(in: app_path('Filament/Pages'), for: 'App\Filament\Pages')
-            ->discoverWidgets(in: app_path('Filament/Widgets'), for: 'App\Filament\Widgets')
+            ->resources([
+                AccessCodeResource::class,
+                AccessGrantResource::class,
+                B2BPackageResource::class,
+                ContactMessageResource::class,
+                CourseModuleResource::class,
+                CourseResource::class,
+                CourseReviewResource::class,
+                FaqResource::class,
+                GroupResource::class,
+                LessonResource::class,
+                NotificationResource::class,
+                PathResource::class,
+                PaymentRequestResource::class,
+                PaymentSettingResource::class,
+                PublicBarcodeTestResource::class,
+                QuestionResource::class,
+                QuizResource::class,
+                SchoolResource::class,
+                SectionResource::class,
+                SkillResource::class,
+                SubjectResource::class,
+                UserResource::class,
+            ])
+            ->pages([
+                ActivityLogs::class,
+                ManageHomepage::class,
+                QuestionAnalytics::class,
+                QuizResults::class,
+                Reports::class,
+                StudentDetail::class,
+            ])
             ->widgets([
+                CourseEnrollmentsChart::class,
                 AccountWidget::class,
                 FilamentInfoWidget::class,
                 StatsOverviewWidget::class,
@@ -48,6 +108,7 @@ class AdminPanelProvider extends PanelProvider
                 UserRegistrationsChart::class,
                 LatestActivityWidget::class,
                 PendingPaymentsWidget::class,
+                QuizCompletionChart::class,
             ])
             ->middleware([
                 EncryptCookies::class,

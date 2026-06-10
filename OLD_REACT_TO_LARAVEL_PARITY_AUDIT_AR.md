@@ -32,7 +32,7 @@
 | `/mock-exams` | موجود داخل الطالب | أضيف تحويل |
 | `/achievements` | غير مكتمل | تحويل مؤقت للوحة الطالب، يحتاج badges/points |
 | `/barcode-test/:slug` | غير موجود | فجوة عالية الأثر للمدارس والتسويق |
-| `/certificate/:code` | Laravel لديه شهادة حسب course للطالب | يحتاج صفحة تحقق عامة بالكود |
+| `/certificate/:code` | Laravel لديه شهادة حسب course للطالب | تم تنفيذ صفحة تحقق عامة بالكود |
 | `/category/:pathId/:subjectId` | موجود بشكل `/category/{path}/subject/{subject}` | أضيف تحويل قديم |
 | `/admin-dashboard` | موجود جزئيا عبر Filament `/admin` | يحتاج نقل رحلة الإدارة القديمة إلى صفحات/Widgets واضحة |
 | `/supervisor-dashboard`, `/parent-dashboard`, `/instructor-dashboard` | صفحات Laravel بسيطة | فجوة كبيرة في اللوحات حسب الدور |
@@ -84,3 +84,63 @@
   - `/my-quizzes` يحول إلى تبويب الاختبارات.
   - `/course/1` يحول إلى `/courses/1`.
   - `/category/1/1` يحول إلى `/category/1/subject/1`.
+  - `/certificate/{code}` يعرض صفحة تحقق عامة للشهادة.
+
+## آخر نتيجة مقارنة
+
+- تمت مقارنة مسارات `App.tsx` القديمة مع `route:list` الحالي.
+- النتيجة الأخيرة أظهرت `missing = []` بالنسبة للمسارات القديمة الأساسية.
+- تمت إضافة تحويلات توافق إضافية لـ:
+  - `/about`
+  - `/blog`
+  - `/privacy`
+  - `/terms`
+  - `/cart`
+  - `/checkout`
+  - `/signup`
+  - `/verify-email`
+  - `/admin-dashboard`
+  - `/admin/quiz-gen`
+  - `/instructor-dashboard`
+  - `/supervisor-dashboard`
+  - `/parent-dashboard`
+  - `/quiz`
+  - `/quiz/{quizId}`
+  - `/section/{catId}`
+  - `/category/{pathId}/packages`
+  - `/barcode-test/{slug}`
+## Update 2026-06-09
+
+- The Laravel side now mirrors the old access-grant scope more closely: `source_type`, `source_id`, `course_ids`, `content_types`, `path_ids`, `subject_ids`, `idempotency_key`, and `metadata` are stored on `AccessGrant`.
+- Student/course access checks now read JSON-scoped grants, not just a single `course_id`.
+- This closes one of the biggest parity gaps, but the old B2B package and access-code ecosystem is still not fully rebuilt.
+
+## Update 2026-06-10
+
+- `/barcode-test/{slug}` is no longer a compatibility redirect to `/courses`.
+- Laravel now has a first-pass equivalent for the old public barcode test feature:
+  - Public active-window checks by slug.
+  - Question rendering from `question_ids`.
+  - Student/school/classroom collection.
+  - Answer grading.
+  - Result/submission persistence.
+  - Filament admin management at `/admin/public-barcode-tests`.
+- Verified locally:
+  - `GET /barcode-test/local-demo` -> 200.
+  - `POST /barcode-test/local-demo` -> 200 and result confirmation.
+  - `PublicBarcodeTestFlowTest` -> passed.
+- Remaining parity risk:
+  - Old React visual layout and old Node submission analytics/reporting may still be richer than this first Laravel implementation.
+
+## Update 2026-06-10 - B2B Packages and Access Codes
+
+- Laravel now includes first-pass equivalents for old `B2BPackage`, `AccessCode`, and code redemption records.
+- Redeeming a valid code creates a scoped `AccessGrant` with package/source metadata.
+- Student route added:
+  - `/student/access-code`
+- Admin routes added:
+  - `/admin/b2-b-packages`
+  - `/admin/access-codes`
+- Verified with `AccessCodeRedemptionTest`.
+- Remaining parity risk:
+  - Old school package management may include richer bulk generation and reporting than this first pass.

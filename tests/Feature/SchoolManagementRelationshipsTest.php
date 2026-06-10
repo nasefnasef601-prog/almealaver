@@ -88,6 +88,20 @@ class SchoolManagementRelationshipsTest extends TestCase
 
         $teacher = User::factory()->create(['role' => 'teacher']);
         $student = User::factory()->create(['role' => 'student', 'school_id' => $school->id]);
+        $groupOnlyStudent = User::factory()->create(['role' => 'student', 'school_id' => null]);
+        $class = Group::create([
+            'school_id' => $school->id,
+            'name' => 'Grade 8 - Remedial',
+            'type' => 'class',
+            'is_active' => true,
+        ]);
+        DB::table('group_user')->insert([
+            'group_id' => $class->id,
+            'user_id' => $groupOnlyStudent->id,
+            'role' => 'student',
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
         $skill = Skill::create([
             'name' => 'Fractions',
             'name_ar' => 'الكسور',
@@ -140,10 +154,16 @@ class SchoolManagementRelationshipsTest extends TestCase
         $page->weakThreshold = 60;
         $page->refreshReport();
 
-        $this->assertSame(1, $page->studentsCount);
+        $this->assertSame(2, $page->studentsCount);
         $this->assertSame(1, $page->weakStudentsCount);
         $this->assertSame(1, $page->weakSkillsCount);
+        $this->assertSame(1, $page->untestedStudentsCount);
+        $this->assertCount(1, $page->skillHotspots);
+        $this->assertCount(1, $page->treatmentPlans);
         $this->assertTrue($page->weakStudents->pluck('id')->contains($student->id));
         $this->assertTrue($page->weakSkills->pluck('skill_id')->contains($skill->id));
+
+        $export = $page->exportWeakStudentsCsv();
+        $this->assertStringContainsString('school-weak-students-', $export->headers->get('content-disposition'));
     }
 }

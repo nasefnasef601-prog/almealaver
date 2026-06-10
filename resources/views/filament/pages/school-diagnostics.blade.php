@@ -25,9 +25,12 @@
             <button type="button" onclick="window.print()" class="rounded-lg bg-gray-900 px-4 py-2 text-sm font-bold text-white">
                 طباعة التقرير
             </button>
+            <button type="button" wire:click="exportWeakStudentsCsv" class="rounded-lg bg-emerald-600 px-4 py-2 text-sm font-bold text-white">
+                تصدير CSV
+            </button>
         </div>
 
-        <div class="grid gap-4 md:grid-cols-4">
+        <div class="grid gap-4 md:grid-cols-5">
             <div class="rounded-xl border border-gray-200 bg-white p-5 shadow-sm">
                 <p class="text-sm font-bold text-gray-500">إجمالي الطلاب</p>
                 <p class="mt-2 text-3xl font-black text-gray-900">{{ number_format($studentsCount) }}</p>
@@ -43,6 +46,10 @@
             <div class="rounded-xl border border-blue-200 bg-blue-50 p-5 shadow-sm">
                 <p class="text-sm font-bold text-blue-700">متوسط النتائج</p>
                 <p class="mt-2 text-3xl font-black text-blue-700">{{ $averageScore }}%</p>
+            </div>
+            <div class="rounded-xl border border-slate-200 bg-slate-50 p-5 shadow-sm">
+                <p class="text-sm font-bold text-slate-700">طلاب بلا اختبار</p>
+                <p class="mt-2 text-3xl font-black text-slate-700">{{ number_format($untestedStudentsCount) }}</p>
             </div>
         </div>
 
@@ -104,6 +111,78 @@
                             @endforelse
                         </tbody>
                     </table>
+                </div>
+            </section>
+        </div>
+
+        <div class="grid gap-6 xl:grid-cols-2">
+            <section class="overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm">
+                <div class="border-b border-gray-100 p-4">
+                    <h2 class="font-black text-gray-900">المهارات الأكثر تكرارا في الضعف</h2>
+                    <p class="mt-1 text-xs text-gray-500">أولوية الشرح الجماعي وخطط الدعم داخل المدرسة.</p>
+                </div>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-sm">
+                        <thead class="bg-gray-50 text-gray-500">
+                            <tr>
+                                <th class="px-4 py-3 text-right">المهارة</th>
+                                <th class="px-4 py-3 text-center">عدد الطلاب</th>
+                                <th class="px-4 py-3 text-center">متوسط الإتقان</th>
+                                <th class="px-4 py-3 text-center">أسئلة مقاسة</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-gray-100">
+                            @forelse($skillHotspots as $hotspot)
+                                <tr>
+                                    <td class="px-4 py-3">
+                                        <span class="font-bold text-gray-900">{{ $hotspot['skill_name'] }}</span>
+                                        @if($hotspot['subject_name'])
+                                            <br><span class="text-xs text-gray-500">{{ $hotspot['subject_name'] }}</span>
+                                        @endif
+                                    </td>
+                                    <td class="px-4 py-3 text-center font-bold">{{ $hotspot['students_count'] }}</td>
+                                    <td class="px-4 py-3 text-center font-black text-amber-600">{{ $hotspot['average_mastery'] }}%</td>
+                                    <td class="px-4 py-3 text-center">{{ $hotspot['total_questions'] }}</td>
+                                </tr>
+                            @empty
+                                <tr><td colspan="4" class="px-4 py-8 text-center text-gray-400">لا توجد بيانات مهارات كافية حاليا</td></tr>
+                            @endforelse
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+            <section class="overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm">
+                <div class="border-b border-gray-100 p-4">
+                    <h2 class="font-black text-gray-900">خطط علاجية قابلة للطباعة</h2>
+                    <p class="mt-1 text-xs text-gray-500">ملخص سريع يساعد المشرف على متابعة الطلاب الأضعف.</p>
+                </div>
+                <div class="divide-y divide-gray-100">
+                    @forelse($treatmentPlans as $plan)
+                        <article class="p-4">
+                            <div class="flex flex-wrap items-start justify-between gap-3">
+                                <div>
+                                    <h3 class="font-black text-gray-900">{{ $plan['student_name'] }}</h3>
+                                    <p class="text-xs text-gray-500">{{ $plan['email'] }}</p>
+                                </div>
+                                <span class="rounded-full bg-rose-100 px-3 py-1 text-xs font-black text-rose-700">{{ number_format((float) $plan['average_score'], 1) }}%</span>
+                            </div>
+                            @if($plan['weak_skills']->isNotEmpty())
+                                <div class="mt-3 flex flex-wrap gap-2">
+                                    @foreach($plan['weak_skills'] as $skill)
+                                        <span class="rounded-full bg-amber-50 px-3 py-1 text-xs font-bold text-amber-700">{{ $skill['name'] }} - {{ number_format((float) $skill['mastery'], 1) }}%</span>
+                                    @endforeach
+                                </div>
+                            @endif
+                            <ul class="mt-3 list-disc space-y-1 pr-5 text-sm text-gray-700">
+                                @foreach($plan['plan'] as $step)
+                                    <li>{{ $step }}</li>
+                                @endforeach
+                            </ul>
+                        </article>
+                    @empty
+                        <div class="p-8 text-center text-sm text-gray-400">لا توجد خطط علاجية حاليا</div>
+                    @endforelse
                 </div>
             </section>
         </div>

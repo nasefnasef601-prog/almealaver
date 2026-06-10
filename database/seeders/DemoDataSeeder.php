@@ -6,6 +6,7 @@ use App\Models\AccessGrant;
 use App\Models\Course;
 use App\Models\CourseModule;
 use App\Models\Group;
+use App\Models\LibraryItem;
 use App\Models\Lesson;
 use App\Models\LessonCompletion;
 use App\Models\PaymentRequest;
@@ -353,11 +354,43 @@ class DemoDataSeeder extends Seeder
         $demoGroup = Group::create([
             'school_id' => $school->id,
             'name' => 'الصف الأول',
+            'description' => 'Demo school class with linked courses, teacher, supervisor, manager, and student.',
             'type' => 'class',
+            'is_active' => true,
             'owner_id' => $teacher->id,
+            'course_ids' => [$freeCourse->id, $paidCourse->id],
+            'settings' => [
+                'weak_threshold' => 60,
+                'report_cycle' => 'weekly',
+            ],
         ]);
 
         $demoGroup->users()->attach($student->id, ['role' => 'student']);
+        $demoGroup->users()->attach($teacher->id, ['role' => 'teacher']);
+        $demoGroup->users()->attach($supervisor->id, ['role' => 'class_supervisor']);
+        $demoGroup->users()->attach($admin->id, ['role' => 'school_manager']);
+
+        LibraryItem::create([
+            'title' => 'Demo Algebra Support PDF',
+            'size' => '1 MB',
+            'downloads' => 0,
+            'type' => 'pdf',
+            'path_id' => $path->id,
+            'subject_id' => $subject->id,
+            'section_id' => $section->id,
+            'skill_ids' => [$skill->id],
+            'url' => 'https://example.com/demo-algebra-support.pdf',
+            'show_on_platform' => true,
+            'is_locked' => false,
+            'owner_type' => 'platform',
+            'created_by' => $admin->id,
+            'assigned_teacher_id' => $teacher->id,
+            'approval_status' => 'approved',
+            'approved_by' => $admin->id,
+            'approved_at' => now(),
+            'reviewer_notes' => 'Demo approved resource for public learning library checks.',
+            'revenue_share_percentage' => 0,
+        ]);
 
         LessonCompletion::create([
             'user_id' => $student->id,

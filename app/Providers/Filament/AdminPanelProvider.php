@@ -23,6 +23,7 @@ use App\Filament\Resources\ContactMessageResource;
 use App\Filament\Resources\CourseModuleResource;
 use App\Filament\Resources\CourseResource;
 use App\Filament\Resources\CourseReviewResource;
+use App\Filament\Resources\DiscountCodeResource;
 use App\Filament\Resources\FaqResource;
 use App\Filament\Resources\GroupResource;
 use App\Filament\Resources\LessonResource;
@@ -75,6 +76,7 @@ class AdminPanelProvider extends PanelProvider
                 CourseModuleResource::class,
                 CourseResource::class,
                 CourseReviewResource::class,
+                DiscountCodeResource::class,
                 FaqResource::class,
                 GroupResource::class,
                 LessonResource::class,

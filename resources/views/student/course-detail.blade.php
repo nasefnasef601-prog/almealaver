@@ -186,6 +186,12 @@
                         <input type="hidden" name="course_id" value="{{ $course->id }}">
                         <input type="hidden" name="amount" value="{{ $course->price }}">
                         <div class="mb-4">
+                            <label class="block text-sm font-bold text-gray-700 mb-2">كود الخصم</label>
+                            <input type="text" name="discount_code" value="{{ old('discount_code') }}" dir="ltr"
+                                   class="w-full rounded-xl border border-gray-200 px-3 py-2 text-sm font-mono tracking-widest focus:border-amber-400 focus:outline-none"
+                                   placeholder="DISCOUNT">
+                        </div>
+                        <div class="mb-4">
                             <label class="block text-sm font-bold text-gray-700 mb-2">تحويل بنكي</label>
                             <div class="bg-gray-50 rounded-xl p-3 text-xs text-gray-600 space-y-1 mb-3">
                                 <p><strong>البنك:</strong> @php $paySetting = \App\Models\PaymentSetting::where('payment_method', 'bank_transfer')->first(); @endphp {{ $paySetting?->config['bank_name'] ?? 'البنك الأهلي السعودي' }}</p>

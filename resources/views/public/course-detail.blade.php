@@ -247,6 +247,12 @@
                     @csrf
                     <input type="hidden" name="course_id" value="{{ $course->id }}">
                     <input type="hidden" name="amount" value="{{ $course->price }}">
+                    <label class="mb-3 block">
+                        <span class="mb-1 block text-sm font-bold text-gray-700">كود الخصم</span>
+                        <input type="text" name="discount_code" value="{{ old('discount_code') }}" dir="ltr"
+                               class="w-full rounded-xl border border-gray-200 px-3 py-2 text-sm font-mono tracking-widest focus:border-amber-400 focus:outline-none"
+                               placeholder="DISCOUNT">
+                    </label>
                     <button type="submit"
                             x-ref="submitBtn"
                             @click="processing = true; $refs.submitBtn.disabled = true"

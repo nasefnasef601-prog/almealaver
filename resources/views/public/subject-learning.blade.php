@@ -92,8 +92,14 @@
 <div
     x-data="{
         tab: @js($requestedTab),
+        init() {
+            this.$watch('tab', (value) => this.syncTabUrl(value));
+        },
         setTab(value) {
             this.tab = value;
+            this.syncTabUrl(value);
+        },
+        syncTabUrl(value) {
             const url = new URL(window.location.href);
             url.searchParams.set('tab', value);
             window.history.replaceState({}, '', url.toString());

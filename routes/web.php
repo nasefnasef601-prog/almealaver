@@ -142,9 +142,7 @@ Route::get('/category/{path}', function (App\Models\Path $path) {
                 'level' => request('level'),
             ]);
 
-            return redirect()->route('category.subject', ['path' => $path, 'subject' => $subject])
-                ->withFragment('')
-                ->setTargetUrl(route('category.subject', ['path' => $path, 'subject' => $subject]) . ($query ? '?' . http_build_query($query) : ''));
+            return redirect(route('category.subject', ['path' => $path, 'subject' => $subject]) . ($query ? '?' . http_build_query($query) : ''));
         }
     }
 

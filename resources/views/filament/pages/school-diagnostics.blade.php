@@ -179,6 +179,15 @@
                                     <li>{{ $step }}</li>
                                 @endforeach
                             </ul>
+                            <button
+                                type="button"
+                                wire:click="createTreatmentPlanFor({{ $plan['student_id'] }})"
+                                wire:loading.attr="disabled"
+                                wire:target="createTreatmentPlanFor({{ $plan['student_id'] }})"
+                                class="mt-4 rounded-lg bg-emerald-600 px-4 py-2 text-xs font-bold text-white disabled:opacity-60"
+                            >
+                                إنشاء خطة داخل حساب الطالب
+                            </button>
                         </article>
                     @empty
                         <div class="p-8 text-center text-sm text-gray-400">لا توجد خطط علاجية حاليا</div>

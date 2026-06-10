@@ -6,8 +6,10 @@ use App\Models\Group;
 use App\Models\QuizResult;
 use App\Models\School;
 use App\Models\SkillProgress;
+use App\Models\StudyPlan;
 use App\Models\User;
 use BackedEnum;
+use Filament\Notifications\Notification;
 use Filament\Pages\Page;
 use Illuminate\Support\Collection;
 
@@ -184,6 +186,54 @@ class SchoolDiagnostics extends Page
         }, $filename, ['Content-Type' => 'text/csv; charset=UTF-8']);
     }
 
+    public function createTreatmentPlanFor(int $studentId): void
+    {
+        $student = User::query()
+            ->where('role', 'student')
+            ->findOrFail($studentId);
+        $weakSkill = $this->weakSkills->firstWhere('user_id', $student->id)
+            ?: SkillProgress::query()
+                ->where('user_id', $student->id)
+                ->where('mastery', '<', $this->weakThreshold)
+                ->where('total_questions', '>', 0)
+                ->orderBy('mastery')
+                ->first();
+        $skill = $weakSkill?->skill;
+        $startsAt = now()->toDateString();
+        $endsAt = now()->addDays(13)->toDateString();
+
+        StudyPlan::updateOrCreate(
+            [
+                'user_id' => $student->id,
+                'source' => 'school_intervention',
+                'status' => 'active',
+                'skill_id' => $skill?->id,
+            ],
+            [
+                'created_by' => auth()->id(),
+                'school_id' => $this->schoolId ?: $student->school_id,
+                'group_id' => $this->groupId,
+                'path_id' => $skill?->section?->subject?->path_id,
+                'subject_id' => $skill?->section?->subject_id,
+                'name' => 'خطة علاج ' . ($skill?->name_ar ?: $skill?->name ?: 'المهارة الأضعف') . ' - ' . $student->name,
+                'starts_at' => $startsAt,
+                'ends_at' => $endsAt,
+                'daily_minutes' => $weakSkill && (float) $weakSkill->mastery < 40 ? 60 : 45,
+                'preferred_start_time' => '17:00',
+                'tasks' => $this->tasksFor($skill?->name_ar ?: $skill?->name ?: 'المهارة الأضعف'),
+                'notes' => 'تم إنشاء الخطة من تقرير تشخيص المدرسة بناء على نتائج الطالب والمهارات الضعيفة.',
+            ],
+        );
+
+        Notification::make()
+            ->title('تم إنشاء خطة علاج للطالب')
+            ->body('ستظهر الخطة في تبويب خطتي داخل حساب الطالب.')
+            ->success()
+            ->send();
+
+        $this->refreshReport();
+    }
+
     private function treatmentPlanFor(float $averageScore): array
     {
         if ($averageScore < 40) {
@@ -205,6 +255,17 @@ class SchoolDiagnostics extends Page
         return [
             'مراجعة خفيفة للحفاظ على المستوى',
             'اختبار قياس بعد أسبوعين',
+        ];
+    }
+
+    private function tasksFor(string $skillName): array
+    {
+        return [
+            ['day' => 0, 'text' => "تشخيص سريع لأخطاء {$skillName}", 'done' => false],
+            ['day' => 1, 'text' => "شرح مركز للقاعدة الأساسية في {$skillName}", 'done' => false],
+            ['day' => 2, 'text' => "حل 10 أسئلة متدرجة على {$skillName}", 'done' => false],
+            ['day' => 4, 'text' => 'مراجعة الأخطاء المتكررة مع المشرف', 'done' => false],
+            ['day' => 6, 'text' => 'اختبار متابعة قصير وقياس التحسن', 'done' => false],
         ];
     }
 

@@ -21,6 +21,7 @@ use App\Models\Subject;
 use App\Models\Section;
 use App\Models\Path;
 use App\Models\Skill;
+use App\Models\StudyPlan;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -321,6 +322,13 @@ class StudentDashboardController extends Controller
                 ->get();
         }
 
+        $studyPlans = StudyPlan::query()
+            ->where('user_id', $user->id)
+            ->where('status', 'active')
+            ->with(['skill.section.subject', 'creator', 'school', 'group'])
+            ->latest()
+            ->get();
+
         return view('student.dashboard', compact(
             'tab',
             'courses',
@@ -347,7 +355,8 @@ class StudentDashboardController extends Controller
             'favQuestions',
             'reviewLaterQuestions',
             'mistakeQuestions',
-            'paymentRequests'
+            'paymentRequests',
+            'studyPlans'
         ));
     }
 

@@ -95,6 +95,11 @@ class User extends Authenticatable
         return $this->hasMany(Report::class);
     }
 
+    public function studyPlans(): HasMany
+    {
+        return $this->hasMany(StudyPlan::class);
+    }
+
     public function createdQuizzes(): HasMany
     {
         return $this->hasMany(Quiz::class, 'created_by');

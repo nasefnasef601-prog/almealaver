@@ -11,6 +11,7 @@ use App\Models\QuizResult;
 use App\Models\School;
 use App\Models\Skill;
 use App\Models\SkillProgress;
+use App\Models\StudyPlan;
 use App\Models\User;
 use App\Filament\Pages\SchoolDiagnostics;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -165,5 +166,15 @@ class SchoolManagementRelationshipsTest extends TestCase
 
         $export = $page->exportWeakStudentsCsv();
         $this->assertStringContainsString('school-weak-students-', $export->headers->get('content-disposition'));
+
+        $admin = User::factory()->create(['role' => 'admin']);
+        $this->actingAs($admin);
+        $page->createTreatmentPlanFor($student->id);
+
+        $createdPlan = StudyPlan::query()->where('user_id', $student->id)->first();
+        $this->assertNotNull($createdPlan);
+        $this->assertSame('school_intervention', $createdPlan->source);
+        $this->assertSame($skill->id, $createdPlan->skill_id);
+        $this->assertNotEmpty($createdPlan->tasks);
     }
 }

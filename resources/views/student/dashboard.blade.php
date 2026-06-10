@@ -644,6 +644,54 @@
             <h1 class="text-2xl font-black text-gray-900">خطتي الدراسية</h1>
         </div>
 
+        @if($studyPlans->isNotEmpty())
+            <div class="bg-white rounded-3xl border border-emerald-100 shadow-sm p-6 mb-6">
+                <div class="flex flex-wrap items-start justify-between gap-3 mb-4">
+                    <div>
+                        <h2 class="font-black text-gray-900">خطط علاج من المدرسة</h2>
+                        <p class="text-sm text-gray-500 mt-1">خطط أنشأها المشرف أو مدير المدرسة بناء على نتائجك ومهاراتك الأضعف.</p>
+                    </div>
+                    <span class="rounded-full bg-emerald-50 px-3 py-1 text-xs font-black text-emerald-700">{{ $studyPlans->count() }} خطة فعالة</span>
+                </div>
+                <div class="grid gap-4 md:grid-cols-2">
+                    @foreach($studyPlans as $plan)
+                        <article class="rounded-2xl border border-gray-100 bg-gray-50 p-4">
+                            <div class="flex items-start justify-between gap-3">
+                                <div>
+                                    <h3 class="font-black text-gray-900">{{ $plan->name }}</h3>
+                                    <p class="mt-1 text-xs text-gray-500">
+                                        {{ $plan->skill?->name_ar ?: $plan->skill?->name ?: 'خطة عامة' }}
+                                        @if($plan->school)
+                                            - {{ $plan->school->name_ar ?: $plan->school->name }}
+                                        @endif
+                                    </p>
+                                </div>
+                                <span class="rounded-full bg-white px-3 py-1 text-xs font-bold text-gray-600">{{ $plan->daily_minutes }} دقيقة/يوم</span>
+                            </div>
+                            @if($plan->tasks)
+                                <ul class="mt-4 list-disc space-y-1 pr-5 text-sm text-gray-700">
+                                    @foreach(array_slice($plan->tasks, 0, 5) as $task)
+                                        <li>{{ is_array($task) ? ($task['text'] ?? $task['title'] ?? '') : $task }}</li>
+                                    @endforeach
+                                </ul>
+                            @endif
+                            <div class="mt-4 flex flex-wrap items-center gap-2 text-xs font-bold text-gray-500">
+                                @if($plan->starts_at)
+                                    <span>من {{ $plan->starts_at->format('Y-m-d') }}</span>
+                                @endif
+                                @if($plan->ends_at)
+                                    <span>إلى {{ $plan->ends_at->format('Y-m-d') }}</span>
+                                @endif
+                                @if($plan->creator)
+                                    <span>بواسطة {{ $plan->creator->name }}</span>
+                                @endif
+                            </div>
+                        </article>
+                    @endforeach
+                </div>
+            </div>
+        @endif
+
         {{-- Weekly Progress --}}
         <div class="bg-white rounded-3xl border border-gray-100 shadow-sm p-6 mb-6">
             <h2 class="font-bold text-gray-900 mb-4 text-sm">التقدم في مهامي الأسبوعية</h2>

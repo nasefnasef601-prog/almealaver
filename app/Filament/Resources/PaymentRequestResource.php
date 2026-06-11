@@ -13,6 +13,7 @@ use BackedEnum;
 use Filament\Forms;
 use Filament\Notifications\Notification;
 use Filament\Resources\Resource;
+use Filament\Schemas\Components\View;
 use Filament\Schemas\Schema;
 use Filament\Tables;
 use Filament\Actions\Action;
@@ -50,8 +51,7 @@ class PaymentRequestResource extends Resource
                 Forms\Components\Textarea::make('notes')
                     ->label('ملاحظات')
                     ->disabled(),
-                Forms\Components\View::make('filament.forms.components.receipt-image')
-                    ->label('الإيصال')
+                View::make('filament.forms.components.receipt-image')
                     ->visible(fn ($record) => $record && $record->bank_transfer_receipt),
             ]);
     }

@@ -8,6 +8,10 @@ return new class extends Migration
 {
     public function up(): void
     {
+        if (Schema::hasTable('public_barcode_submissions')) {
+            return;
+        }
+
         Schema::create('public_barcode_submissions', function (Blueprint $table) {
             $table->id();
             $table->foreignId('public_barcode_test_id')->constrained('public_barcode_tests')->cascadeOnDelete();

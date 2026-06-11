@@ -168,6 +168,9 @@ class SchoolManagementRelationshipsTest extends TestCase
         $export = $page->exportWeakStudentsCsv();
         $this->assertStringContainsString('school-weak-students-', $export->headers->get('content-disposition'));
 
+        $skillExport = $page->exportSkillHotspotsCsv();
+        $this->assertStringContainsString('school-weak-skill-hotspots-', $skillExport->headers->get('content-disposition'));
+
         $admin = User::factory()->create(['role' => 'admin']);
         $this->actingAs($admin);
         $page->createTreatmentPlanFor($student->id);

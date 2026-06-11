@@ -188,6 +188,31 @@ class SchoolDiagnostics extends Page
         }, $filename, ['Content-Type' => 'text/csv; charset=UTF-8']);
     }
 
+    public function exportSkillHotspotsCsv()
+    {
+        $this->refreshReport();
+
+        $filename = 'school-weak-skill-hotspots-' . now()->format('Y-m-d-His') . '.csv';
+
+        return response()->streamDownload(function (): void {
+            $handle = fopen('php://output', 'w');
+            fwrite($handle, "\xEF\xBB\xBF");
+            fputcsv($handle, ['Skill', 'Subject', 'Weak students', 'Average mastery', 'Measured questions']);
+
+            foreach ($this->skillHotspots as $hotspot) {
+                fputcsv($handle, [
+                    $hotspot['skill_name'],
+                    $hotspot['subject_name'],
+                    $hotspot['students_count'],
+                    number_format((float) $hotspot['average_mastery'], 1) . '%',
+                    $hotspot['total_questions'],
+                ]);
+            }
+
+            fclose($handle);
+        }, $filename, ['Content-Type' => 'text/csv; charset=UTF-8']);
+    }
+
     public function createTreatmentPlanFor(int $studentId): void
     {
         abort_unless($this->studentQuery()->where('users.id', $studentId)->exists(), 403);

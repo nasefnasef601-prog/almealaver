@@ -25,6 +25,7 @@
             <button type="button" onclick="window.print()" class="rounded-lg bg-gray-900 px-4 py-2 text-sm font-bold text-white">
                 طباعة التقرير
             </button>
+            <button type="button" wire:click="exportSkillHotspotsCsv" class="rounded-lg bg-amber-600 px-4 py-2 text-sm font-bold text-white">تصدير المهارات</button>
             <button type="button" wire:click="exportWeakStudentsCsv" class="rounded-lg bg-emerald-600 px-4 py-2 text-sm font-bold text-white">
                 تصدير CSV
             </button>

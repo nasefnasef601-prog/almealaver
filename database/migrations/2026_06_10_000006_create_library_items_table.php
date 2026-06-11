@@ -8,6 +8,10 @@ return new class extends Migration
 {
     public function up(): void
     {
+        if (Schema::hasTable('library_items')) {
+            return;
+        }
+
         Schema::create('library_items', function (Blueprint $table) {
             $table->id();
             $table->string('title');
@@ -32,9 +36,9 @@ return new class extends Migration
             $table->decimal('revenue_share_percentage', 5, 2)->nullable();
             $table->timestamps();
 
-            $table->index(['path_id', 'subject_id', 'section_id', 'show_on_platform']);
-            $table->index(['owner_type', 'owner_id', 'approval_status']);
-            $table->index(['assigned_teacher_id', 'approval_status']);
+            $table->index(['path_id', 'subject_id', 'section_id', 'show_on_platform'], 'lib_items_scope_show_idx');
+            $table->index(['owner_type', 'owner_id', 'approval_status'], 'lib_items_owner_status_idx');
+            $table->index(['assigned_teacher_id', 'approval_status'], 'lib_items_teacher_status_idx');
         });
     }
 

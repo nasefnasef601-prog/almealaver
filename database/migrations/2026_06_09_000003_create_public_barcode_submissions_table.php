@@ -26,7 +26,7 @@ return new class extends Migration
             $table->json('metadata')->nullable();
             $table->timestamps();
 
-            $table->index(['public_barcode_test_id', 'created_at']);
+            $table->index(['public_barcode_test_id', 'created_at'], 'pbt_submissions_test_created_idx');
         });
     }
 

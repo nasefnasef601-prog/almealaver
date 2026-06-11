@@ -103,6 +103,17 @@
                     </button>
                 </form>
             </div>
+
+            <div class="bg-white rounded-3xl border border-gray-100 shadow-sm p-6 flex flex-wrap items-center justify-between gap-3">
+                <div>
+                    <h2 class="font-bold text-gray-900">نقاشات الدرس</h2>
+                    <p class="text-sm text-gray-500 mt-1">افتح مساحة النقاش الخاصة بهذا الدرس فقط.</p>
+                </div>
+                <a href="{{ route('student.lesson-discussions.index', [$course->id, $lesson->id]) }}"
+                   class="inline-flex items-center justify-center rounded-xl bg-blue-600 px-5 py-2.5 text-sm font-bold text-white transition-colors hover:bg-blue-700">
+                    فتح النقاشات
+                </a>
+            </div>
         </div>
 
         {{-- Sidebar: Lesson List --}}

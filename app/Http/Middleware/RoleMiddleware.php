@@ -14,6 +14,13 @@ class RoleMiddleware
             return redirect()->route('login');
         }
 
+        $roles = collect($roles)
+            ->flatMap(fn (string $role): array => preg_split('/[|,]/', $role) ?: [])
+            ->map(fn (string $role): string => trim($role))
+            ->filter()
+            ->values()
+            ->all();
+
         $user = Auth::user();
 
         foreach ($roles as $role) {

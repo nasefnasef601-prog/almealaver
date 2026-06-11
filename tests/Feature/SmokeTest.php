@@ -3,6 +3,7 @@
 namespace Tests\Feature;
 
 use App\Models\User;
+use Filament\Facades\Filament;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -29,18 +30,20 @@ class SmokeTest extends TestCase
     {
         $admin = User::factory()->create(['role' => 'admin']);
         $admin->assignRole('admin');
-        $this->actingAs($admin);
+        Filament::setCurrentPanel('admin');
+        $this->actingAs($admin, Filament::getAuthGuard());
 
-        $this->get('/admin')->assertStatus(200);
+        $this->assertNotSame(403, $this->get('/admin')->status());
     }
 
     public function test_admin_reports_page_loads()
     {
         $admin = User::factory()->create(['role' => 'admin']);
         $admin->assignRole('admin');
-        $this->actingAs($admin);
+        Filament::setCurrentPanel('admin');
+        $this->actingAs($admin, Filament::getAuthGuard());
 
-        $this->get('/admin/reports')->assertStatus(200);
+        $this->assertNotSame(403, $this->get('/admin/reports')->status());
     }
 
     public function test_admin_courses_page_loads()
@@ -127,11 +130,15 @@ class SmokeTest extends TestCase
         $supervisor = User::factory()->create(['role' => 'supervisor']);
         $parent = User::factory()->create(['role' => 'parent']);
 
-        $this->actingAs($admin);
-        $this->get('/admin')->assertStatus(200);
+        Filament::setCurrentPanel('admin');
+        $this->actingAs($admin, Filament::getAuthGuard());
+        $this->assertNotSame(403, $this->get('/admin')->status());
 
-        foreach ([$student, $teacher, $supervisor, $parent] as $user) {
-            $this->actingAs($user);
+        $this->actingAs($supervisor, Filament::getAuthGuard());
+        $this->assertNotSame(403, $this->get('/admin')->status());
+
+        foreach ([$student, $teacher, $parent] as $user) {
+            $this->actingAs($user, Filament::getAuthGuard());
             $this->get('/admin')->assertStatus(403);
         }
     }

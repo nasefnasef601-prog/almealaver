@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Course;
+use App\Models\CourseCompletion;
 use App\Models\Lesson;
 use App\Models\LessonCompletion;
 use App\Models\AccessGrant;

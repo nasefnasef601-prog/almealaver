@@ -12,16 +12,13 @@
     $course = Course::with(['modules.lessons' => fn($q) => $q->where('is_published', true)->orderBy('sort_order')])
         ->with(['lessonCompletions' => fn($q) => $q->where('user_id', Auth::id())])
         ->findOrFail($courseId);
+    $user = Auth::user();
     $avgRating = $course->approvedReviews()->avg('rating') ?? 0;
     $reviewsCount = $course->approvedReviews()->count();
     $myReview = \App\Models\CourseReview::where('user_id', $user->id)
         ->where('course_id', $course->id)->first();
     $reviews = $course->approvedReviews()->with('user')->latest()->take(10)->get();
-    $user = Auth::user();
-    $hasAccess = AccessGrant::where('user_id', $user->id)
-        ->where('course_id', $course->id)
-        ->where('status', 'active')
-        ->exists();
+    $hasAccess = AccessGrant::userHasCourseAccess($user->id, $course->id);
     $isFree = $course->price == 0;
     $canAccess = $hasAccess || $isFree;
     $allLessonIds = $course->modules->flatMap(fn($m) => $m->lessons->pluck('id'));
@@ -251,6 +248,14 @@
             </div>
 
             @if($canAccess)
+                <div class="bg-white rounded-3xl border border-gray-100 shadow-sm p-6">
+                    <h3 class="font-bold text-gray-900 mb-2">نقاشات الدورة</h3>
+                    <p class="text-sm text-gray-500 mb-4">اسأل وتابع ردود زملائك داخل مساحة مرتبطة بهذه الدورة.</p>
+                    <a href="{{ route('student.course-discussions.index', $course->id) }}" class="inline-flex items-center justify-center rounded-xl bg-blue-600 px-5 py-2.5 text-sm font-bold text-white transition-colors hover:bg-blue-700">
+                        فتح النقاشات
+                    </a>
+                </div>
+
                 <div class="bg-white rounded-3xl border border-gray-100 shadow-sm p-6">
                     <h3 class="font-bold text-gray-900 mb-3">تقدمك</h3>
                     <div class="text-center">

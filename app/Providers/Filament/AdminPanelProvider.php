@@ -24,6 +24,7 @@ use App\Filament\Resources\ContactMessageResource;
 use App\Filament\Resources\CourseModuleResource;
 use App\Filament\Resources\CourseResource;
 use App\Filament\Resources\CourseReviewResource;
+use App\Filament\Resources\DiscussionThreadResource;
 use App\Filament\Resources\DiscountCodeResource;
 use App\Filament\Resources\FaqResource;
 use App\Filament\Resources\GroupResource;
@@ -78,6 +79,7 @@ class AdminPanelProvider extends PanelProvider
                 CourseModuleResource::class,
                 CourseResource::class,
                 CourseReviewResource::class,
+                DiscussionThreadResource::class,
                 DiscountCodeResource::class,
                 FaqResource::class,
                 GroupResource::class,
@@ -129,7 +131,7 @@ class AdminPanelProvider extends PanelProvider
             ])
             ->authMiddleware([
                 Authenticate::class,
-                'role:admin',
+                'role:admin,supervisor',
             ]);
     }
 }

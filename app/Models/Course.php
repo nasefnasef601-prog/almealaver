@@ -83,6 +83,11 @@ class Course extends Model
         return $this->hasMany(CourseReview::class);
     }
 
+    public function discussionThreads(): HasMany
+    {
+        return $this->hasMany(DiscussionThread::class);
+    }
+
     public function approvedReviews(): HasMany
     {
         return $this->hasMany(CourseReview::class)->where('is_approved', true);

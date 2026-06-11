@@ -52,4 +52,10 @@ class Lesson extends Model
     {
         return $this->hasMany(LessonQuestion::class);
     }
+
+    public function discussionThreads(): HasMany
+    {
+        return $this->hasMany(DiscussionThread::class, 'entity_id')
+            ->where('entity_type', 'lesson');
+    }
 }

@@ -491,6 +491,21 @@
             </div>
         </div>
 
+        <div class="grid gap-3 sm:grid-cols-3 mb-6">
+            <div class="rounded-2xl border border-amber-100 bg-amber-50 p-4">
+                <p class="text-xs font-bold text-amber-700">مستحق اليوم</p>
+                <p class="mt-1 text-2xl font-black text-amber-900">{{ $reviewDueToday ?? 0 }}</p>
+            </div>
+            <div class="rounded-2xl border border-blue-100 bg-blue-50 p-4">
+                <p class="text-xs font-bold text-blue-700">مستحق هذا الأسبوع</p>
+                <p class="mt-1 text-2xl font-black text-blue-900">{{ $reviewDueThisWeek ?? 0 }}</p>
+            </div>
+            <div class="rounded-2xl border border-gray-100 bg-white p-4">
+                <p class="text-xs font-bold text-gray-500">إجمالي بطاقات المراجعة</p>
+                <p class="mt-1 text-2xl font-black text-gray-900">{{ $reviewTotalCards ?? 0 }}</p>
+            </div>
+        </div>
+
         {{-- Question Center Logic --}}
         @php
             $favList = $favQuestions->toArray();
@@ -531,6 +546,24 @@
                         window.location.reload(); // Simple reload to refresh database state
                     });
                 }
+            },
+            submitReviewQuality(quality) {
+                const q = this.getCurrentQuestion();
+                if (!q || !q.review_card_id) return;
+
+                fetch(`{{ url('/student/review-later') }}/${q.review_card_id}/answer`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': '{{ csrf_token() }}' },
+                    body: JSON.stringify({ quality })
+                }).then(r => r.json()).then((data) => {
+                    q.review_due_at = data.next_review_at;
+                    q.review_interval_days = data.interval_days;
+                    q.review_repetitions = data.repetitions;
+                    q.review_last_quality = quality;
+                    q.review_is_due = false;
+                    this.favShowAnswer = false;
+                    if (this.favIndex < this.getQuestionsList().length - 1) this.favIndex++;
+                });
             }
         }">
             <template x-if="getQuestionsList().length === 0">
@@ -545,6 +578,12 @@
                         <span class="bg-amber-500 text-white text-xs font-bold px-3 py-1.5 rounded-full shadow-sm">
                             السؤال <span x-text="favIndex + 1"></span> من <span x-text="getQuestionsList().length"></span>
                         </span>
+                        <template x-if="favActiveTab === 'reviewLater' && getCurrentQuestion().review_due_at">
+                            <span class="rounded-full px-3 py-1.5 text-xs font-bold"
+                                  :class="getCurrentQuestion().review_is_due ? 'bg-rose-50 text-rose-700' : 'bg-emerald-50 text-emerald-700'">
+                                <span x-text="getCurrentQuestion().review_is_due ? 'مستحق الآن' : `التالي: ${getCurrentQuestion().review_due_at}`"></span>
+                            </span>
+                        </template>
                         
                         <div class="flex gap-2">
                             <button @click="removeCurrent()" class="bg-rose-500 hover:bg-rose-600 text-white text-xs font-bold px-3 py-2 rounded-xl transition-colors">
@@ -599,6 +638,13 @@
                                     <button @click="videoUrl = getCurrentQuestion().video_url; showVideo = true;" class="bg-emerald-500 hover:bg-emerald-600 text-white font-bold px-4 py-2 rounded-xl text-xs transition-colors">
                                         📺 شرح الفيديو
                                     </button>
+                                </template>
+                                <template x-if="favActiveTab === 'reviewLater' && getCurrentQuestion().review_card_id">
+                                    <div class="flex flex-wrap gap-1">
+                                        <button @click="submitReviewQuality(2)" class="bg-red-50 text-red-700 font-bold px-3 py-2 rounded-xl text-xs hover:bg-red-100">صعب</button>
+                                        <button @click="submitReviewQuality(4)" class="bg-amber-50 text-amber-700 font-bold px-3 py-2 rounded-xl text-xs hover:bg-amber-100">جيد</button>
+                                        <button @click="submitReviewQuality(5)" class="bg-emerald-50 text-emerald-700 font-bold px-3 py-2 rounded-xl text-xs hover:bg-emerald-100">سهل</button>
+                                    </div>
                                 </template>
                             </div>
                         </div>

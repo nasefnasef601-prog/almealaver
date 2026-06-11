@@ -64,4 +64,10 @@ class Quiz extends Model
     {
         return $this->hasMany(QuizResult::class);
     }
+
+    public function discussionThreads(): HasMany
+    {
+        return $this->hasMany(DiscussionThread::class, 'entity_id')
+            ->where('entity_type', 'quiz');
+    }
 }

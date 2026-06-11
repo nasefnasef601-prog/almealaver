@@ -56,6 +56,13 @@
                 <a href="{{ route('student.quiz.result', $quiz->id) }}" class="text-sm text-blue-600 hover:text-blue-800 font-medium">عرض آخر نتيجة ←</a>
             </div>
         @endif
+        <div class="mt-6 rounded-2xl bg-gray-50 p-4">
+            <p class="text-sm font-bold text-gray-900">نقاشات الاختبار</p>
+            <p class="mt-1 text-xs text-gray-500">تابع أسئلة الطلاب وملاحظاتهم حول هذا الاختبار.</p>
+            <a href="{{ route('student.quiz-discussions.index', $quiz->id) }}" class="mt-3 inline-flex rounded-xl bg-blue-600 px-5 py-2 text-sm font-bold text-white hover:bg-blue-700">
+                فتح النقاشات
+            </a>
+        </div>
     </div>
 </div>
 @endsection

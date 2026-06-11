@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\DiscussionController;
 use App\Http\Controllers\PublicBarcodeTestController;
 use App\Models\HomepageSetting;
 use Illuminate\Support\Facades\Route;
@@ -196,6 +197,20 @@ Route::middleware(['auth', 'role:student'])->prefix('student')->name('student.')
         return view('student.course-detail', ['courseId' => $course->id]);
     })->name('course-detail');
 
+    Route::get('/courses/{course}/discussions', [DiscussionController::class, 'index'])->name('course-discussions.index');
+    Route::post('/courses/{course}/discussions', [DiscussionController::class, 'store'])->name('course-discussions.store');
+    Route::get('/courses/{course}/lessons/{lesson}/discussions', [DiscussionController::class, 'lessonIndex'])->name('lesson-discussions.index');
+    Route::post('/courses/{course}/lessons/{lesson}/discussions', [DiscussionController::class, 'lessonStore'])->name('lesson-discussions.store');
+    Route::get('/quiz/{quiz}/discussions', [DiscussionController::class, 'quizIndex'])->name('quiz-discussions.index');
+    Route::post('/quiz/{quiz}/discussions', [DiscussionController::class, 'quizStore'])->name('quiz-discussions.store');
+    Route::post('/courses/{course}/discussions/{thread}/replies', [DiscussionController::class, 'reply'])->name('course-discussions.reply');
+    Route::post('/courses/{course}/discussions/{thread}/resolve', [DiscussionController::class, 'resolve'])->name('course-discussions.resolve');
+    Route::post('/discussions/{thread}/replies', [DiscussionController::class, 'threadReply'])->name('discussions.reply');
+    Route::post('/discussions/{thread}/resolve', [DiscussionController::class, 'threadResolve'])->name('discussions.resolve');
+    Route::post('/discussions/{thread}/upvote', [DiscussionController::class, 'toggleThreadUpvote'])->name('discussions.upvote');
+    Route::post('/discussion-replies/{reply}/upvote', [DiscussionController::class, 'toggleReplyUpvote'])->name('discussion-replies.upvote');
+    Route::post('/discussion-replies/{reply}/accept', [DiscussionController::class, 'acceptReply'])->name('discussion-replies.accept');
+
     Route::post('/payment-request', [\App\Http\Controllers\PaymentController::class, 'requestPurchase'])
         ->name('payment-request');
 
@@ -240,6 +255,7 @@ Route::middleware(['auth', 'role:student'])->prefix('student')->name('student.')
     })->name('favorite.toggle');
 
     Route::post('/review-later/toggle', [\App\Http\Controllers\StudentDashboardController::class, 'toggleReviewLater'])->name('review-later.toggle');
+    Route::post('/review-later/{reviewLater}/answer', [\App\Http\Controllers\StudentDashboardController::class, 'answerReviewLater'])->name('review-later.answer');
     Route::post('/saher/generate', [\App\Http\Controllers\StudentDashboardController::class, 'generateSaherQuiz'])->name('saher.generate');
     Route::post('/sessions/book', [\App\Http\Controllers\StudentDashboardController::class, 'bookPrivateSession'])->name('sessions.book');
 

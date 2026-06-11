@@ -265,10 +265,36 @@ class StudentDashboardController extends Controller
             $favQuestions = Question::whereIn('id', $favQuestionIds)->get();
 
             // 2. Review Later Questions
-            $reviewLaterIds = ReviewLater::where('user_id', $user->id)
-                ->pluck('question_id')
-                ->toArray();
-            $reviewLaterQuestions = Question::whereIn('id', $reviewLaterIds)->get();
+            $reviewLaterCards = ReviewLater::where('user_id', $user->id)
+                ->with('question')
+                ->orderByRaw('CASE WHEN next_review_at IS NULL THEN 0 ELSE 1 END')
+                ->orderBy('next_review_at')
+                ->get();
+            $reviewLaterQuestions = $reviewLaterCards
+                ->map(function (ReviewLater $card) {
+                    $question = $card->question;
+                    if (! $question) {
+                        return null;
+                    }
+
+                    $question->setAttribute('review_card_id', $card->id);
+                    $question->setAttribute('review_due_at', $card->next_review_at?->toDateTimeString());
+                    $question->setAttribute('review_interval_days', $card->interval_days);
+                    $question->setAttribute('review_repetitions', $card->repetitions);
+                    $question->setAttribute('review_last_quality', $card->last_quality);
+                    $question->setAttribute('review_is_due', ! $card->next_review_at || $card->next_review_at->lte(now()));
+
+                    return $question;
+                })
+                ->filter()
+                ->values();
+            $reviewDueToday = $reviewLaterCards
+                ->filter(fn (ReviewLater $card) => ! $card->next_review_at || $card->next_review_at->lte(now()))
+                ->count();
+            $reviewDueThisWeek = $reviewLaterCards
+                ->filter(fn (ReviewLater $card) => ! $card->next_review_at || $card->next_review_at->lte(now()->addWeek()))
+                ->count();
+            $reviewTotalCards = $reviewLaterCards->count();
 
             // 3. Mistakes (Incorrect Questions)
             $completedAttempts = QuizAttempt::where('user_id', $user->id)
@@ -356,7 +382,10 @@ class StudentDashboardController extends Controller
             'reviewLaterQuestions',
             'mistakeQuestions',
             'paymentRequests',
-            'studyPlans'
+            'studyPlans',
+            'reviewDueToday',
+            'reviewDueThisWeek',
+            'reviewTotalCards'
         ));
     }
 
@@ -370,6 +399,24 @@ class StudentDashboardController extends Controller
 
         $marked = ReviewLater::toggle(auth()->id(), $questionId);
         return response()->json(['marked' => $marked]);
+    }
+
+    public function answerReviewLater(Request $request, ReviewLater $reviewLater)
+    {
+        abort_unless((int) $reviewLater->user_id === (int) auth()->id(), 403);
+
+        $validated = $request->validate([
+            'quality' => 'required|integer|min:0|max:5',
+        ]);
+
+        $reviewLater->applyReviewQuality((int) $validated['quality']);
+
+        return response()->json([
+            'success' => true,
+            'next_review_at' => $reviewLater->fresh()->next_review_at?->toDateTimeString(),
+            'interval_days' => $reviewLater->fresh()->interval_days,
+            'repetitions' => $reviewLater->fresh()->repetitions,
+        ]);
     }
 
     public function generateSaherQuiz(Request $request)

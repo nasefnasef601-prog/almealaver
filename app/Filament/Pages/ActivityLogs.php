@@ -8,8 +8,9 @@ use Filament\Pages\Page;
 use Filament\Tables;
 use Filament\Tables\Table;
 use Filament\Tables\Concerns\InteractsWithTable;
+use Filament\Tables\Contracts\HasTable;
 
-class ActivityLogs extends Page
+class ActivityLogs extends Page implements HasTable
 {
     use InteractsWithTable;
 

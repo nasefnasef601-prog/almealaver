@@ -43,7 +43,7 @@ class SchoolDiagnostics extends Page
 
     public function mount(): void
     {
-        $this->schools = School::query()->where('is_active', true)->orderBy('name_ar')->get();
+        $this->schools = $this->schoolQuery()->orderBy('name_ar')->get();
         $this->schoolId = $this->schoolId ?: $this->schools->first()?->id;
         $this->refreshReport();
     }
@@ -66,6 +66,8 @@ class SchoolDiagnostics extends Page
 
     public function refreshReport(): void
     {
+        $this->normalizeScope();
+
         $studentIds = $this->studentQuery()->pluck('users.id');
 
         $this->groups = Group::query()
@@ -188,6 +190,8 @@ class SchoolDiagnostics extends Page
 
     public function createTreatmentPlanFor(int $studentId): void
     {
+        abort_unless($this->studentQuery()->where('users.id', $studentId)->exists(), 403);
+
         $student = User::query()
             ->where('role', 'student')
             ->findOrFail($studentId);
@@ -295,5 +299,76 @@ class SchoolDiagnostics extends Page
         }
 
         return $query;
+    }
+
+    private function schoolQuery()
+    {
+        $query = School::query()->where('is_active', true);
+        $schoolIds = $this->managedSchoolIds();
+
+        if ($schoolIds !== null) {
+            $query->whereIn('id', $schoolIds);
+        }
+
+        return $query;
+    }
+
+    private function managedSchoolIds(): ?Collection
+    {
+        $user = auth()->user();
+
+        if (! $user) {
+            return null;
+        }
+
+        if (($user->role === 'admin') || $user->hasRole('admin')) {
+            return null;
+        }
+
+        if (($user->role !== 'supervisor') && ! $user->hasRole('supervisor')) {
+            return collect();
+        }
+
+        $schoolIds = collect([$user->school_id])->filter();
+
+        $groupSchoolIds = Group::query()
+            ->whereNotNull('school_id')
+            ->whereHas('users', function ($query) use ($user): void {
+                $query
+                    ->where('users.id', $user->id)
+                    ->whereIn('group_user.role', ['supervisor', 'class_supervisor', 'school_manager']);
+            })
+            ->pluck('school_id');
+
+        return $schoolIds
+            ->merge($groupSchoolIds)
+            ->filter()
+            ->unique()
+            ->values();
+    }
+
+    private function normalizeScope(): void
+    {
+        $schoolIds = $this->managedSchoolIds();
+
+        if ($schoolIds !== null && $this->schoolId && ! $schoolIds->contains((int) $this->schoolId)) {
+            $this->schoolId = $schoolIds->first();
+            $this->groupId = null;
+        }
+
+        if (! $this->schoolId) {
+            $this->schoolId = $this->schools->first()?->id;
+        }
+
+        if ($this->groupId) {
+            $groupAllowed = Group::query()
+                ->whereKey($this->groupId)
+                ->where('school_id', $this->schoolId)
+                ->exists();
+
+            if (! $groupAllowed) {
+                $this->groupId = null;
+            }
+        }
     }
 }

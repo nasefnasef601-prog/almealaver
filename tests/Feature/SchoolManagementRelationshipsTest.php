@@ -16,6 +16,7 @@ use App\Models\User;
 use App\Filament\Pages\SchoolDiagnostics;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
+use Symfony\Component\HttpKernel\Exception\HttpException;
 use Tests\TestCase;
 
 class SchoolManagementRelationshipsTest extends TestCase
@@ -176,5 +177,85 @@ class SchoolManagementRelationshipsTest extends TestCase
         $this->assertSame('school_intervention', $createdPlan->source);
         $this->assertSame($skill->id, $createdPlan->skill_id);
         $this->assertNotEmpty($createdPlan->tasks);
+    }
+
+    public function test_supervisor_school_diagnostics_is_limited_to_managed_school(): void
+    {
+        $managedSchool = School::create([
+            'name' => 'Managed School',
+            'name_ar' => 'Managed School',
+            'code' => 'MNG',
+            'is_active' => true,
+        ]);
+        $otherSchool = School::create([
+            'name' => 'Other School',
+            'name_ar' => 'Other School',
+            'code' => 'OTH',
+            'is_active' => true,
+        ]);
+
+        $supervisor = User::factory()->create(['role' => 'supervisor', 'school_id' => $managedSchool->id]);
+        $supervisor->assignRole('supervisor');
+        $teacher = User::factory()->create(['role' => 'teacher']);
+        $managedStudent = User::factory()->create(['role' => 'student', 'school_id' => $managedSchool->id]);
+        $outsideStudent = User::factory()->create(['role' => 'student', 'school_id' => $otherSchool->id]);
+
+        $skill = Skill::create([
+            'name' => 'Ratios',
+            'name_ar' => 'Ratios',
+            'slug' => 'ratios',
+            'is_active' => true,
+        ]);
+        $quiz = Quiz::create([
+            'title' => 'Ratios Quiz',
+            'title_ar' => 'Ratios Quiz',
+            'created_by' => $teacher->id,
+            'is_published' => true,
+            'status' => 'published',
+        ]);
+
+        foreach ([$managedStudent, $outsideStudent] as $student) {
+            QuizResult::create([
+                'user_id' => $student->id,
+                'quiz_id' => $quiz->id,
+                'score_percentage' => 30,
+                'passed' => false,
+                'total_questions' => 10,
+                'correct_count' => 3,
+                'incorrect_count' => 7,
+                'completed_at' => now(),
+            ]);
+            SkillProgress::create([
+                'user_id' => $student->id,
+                'skill_id' => $skill->id,
+                'mastery' => 30,
+                'status' => 'weak',
+                'total_attempts' => 1,
+                'correct_answers' => 3,
+                'total_questions' => 10,
+            ]);
+        }
+
+        $this->actingAs($supervisor);
+
+        $page = new SchoolDiagnostics();
+        $page->mount();
+
+        $this->assertTrue($page->schools->pluck('id')->contains($managedSchool->id));
+        $this->assertFalse($page->schools->pluck('id')->contains($otherSchool->id));
+
+        $page->schoolId = $otherSchool->id;
+        $page->refreshReport();
+
+        $this->assertSame($managedSchool->id, $page->schoolId);
+        $this->assertTrue($page->weakStudents->pluck('id')->contains($managedStudent->id));
+        $this->assertFalse($page->weakStudents->pluck('id')->contains($outsideStudent->id));
+
+        try {
+            $page->createTreatmentPlanFor($outsideStudent->id);
+            $this->fail('Supervisor should not create treatment plans outside managed school.');
+        } catch (HttpException $exception) {
+            $this->assertSame(403, $exception->getStatusCode());
+        }
     }
 }

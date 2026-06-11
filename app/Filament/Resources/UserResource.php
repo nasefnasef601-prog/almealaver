@@ -10,6 +10,7 @@ use App\Models\LessonCompletion;
 use App\Models\QuizAttempt;
 use App\Models\User;
 use BackedEnum;
+use Filament\Actions;
 use Filament\Forms;
 use Filament\Forms\Components\Select;
 use Filament\Notifications\Notification;

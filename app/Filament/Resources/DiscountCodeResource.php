@@ -6,6 +6,7 @@ use App\Filament\Resources\DiscountCodeResource\Pages;
 use App\Models\Course;
 use App\Models\DiscountCode;
 use BackedEnum;
+use Filament\Actions;
 use Filament\Forms;
 use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
@@ -88,8 +89,8 @@ class DiscountCodeResource extends Resource
             ])
             ->defaultSort('created_at', 'desc')
             ->actions([
-                Tables\Actions\EditAction::make(),
-                Tables\Actions\DeleteAction::make(),
+                Actions\EditAction::make(),
+                Actions\DeleteAction::make(),
             ]);
     }
 

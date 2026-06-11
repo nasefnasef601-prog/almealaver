@@ -9,6 +9,7 @@ use Filament\Forms;
 use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
 use Filament\Actions\EditAction;
+use Filament\Actions;
 use Filament\Tables;
 use Filament\Tables\Table;
 use Filament\Actions\BulkActionGroup;
@@ -170,7 +171,7 @@ class QuestionResource extends Resource
             ])
             ->actions([
                 EditAction::make()->label('تعديل'),
-                Tables\Actions\DeleteAction::make()->label('حذف'),
+                Actions\DeleteAction::make()->label('حذف'),
             ])
             ->bulkActions([
                 BulkActionGroup::make([

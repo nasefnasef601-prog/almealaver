@@ -8,10 +8,11 @@ use App\Models\Quiz;
 use BackedEnum;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Concerns\InteractsWithForms;
+use Filament\Forms\Contracts\HasForms;
 use Filament\Pages\Page;
 use Filament\Schemas\Schema;
 
-class QuestionAnalytics extends Page
+class QuestionAnalytics extends Page implements HasForms
 {
     use InteractsWithForms;
 

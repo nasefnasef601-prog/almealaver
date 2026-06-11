@@ -3,6 +3,7 @@
 namespace App\Filament\Resources\CourseResource\RelationManagers;
 
 use BackedEnum;
+use Filament\Actions;
 use Filament\Forms;
 use Filament\Resources\RelationManagers\RelationManager;
 use Filament\Schemas\Schema;
@@ -58,11 +59,11 @@ class CourseModulesRelationManager extends RelationManager
             ])
             ->defaultSort('sort_order')
             ->headerActions([
-                Tables\Actions\CreateAction::make()->label('إضافة موديول'),
+                Actions\CreateAction::make()->label('إضافة موديول'),
             ])
             ->actions([
-                Tables\Actions\EditAction::make()->label('تعديل'),
-                Tables\Actions\DeleteAction::make()->label('حذف'),
+                Actions\EditAction::make()->label('تعديل'),
+                Actions\DeleteAction::make()->label('حذف'),
             ])
             ->bulkActions([
                 BulkActionGroup::make([

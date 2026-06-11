@@ -3,6 +3,7 @@
 namespace App\Filament\Resources\SkillResource\RelationManagers;
 
 use BackedEnum;
+use Filament\Actions;
 use Filament\Forms;
 use Filament\Resources\RelationManagers\RelationManager;
 use Filament\Schemas\Schema;
@@ -70,11 +71,11 @@ class QuestionsRelationManager extends RelationManager
             ])
             ->filters([])
             ->headerActions([
-                Tables\Actions\CreateAction::make()->label('إضافة سؤال'),
+                Actions\CreateAction::make()->label('إضافة سؤال'),
             ])
             ->actions([
-                Tables\Actions\EditAction::make()->label('تعديل'),
-                Tables\Actions\DeleteAction::make()->label('حذف'),
+                Actions\EditAction::make()->label('تعديل'),
+                Actions\DeleteAction::make()->label('حذف'),
             ])
             ->bulkActions([
                 BulkActionGroup::make([

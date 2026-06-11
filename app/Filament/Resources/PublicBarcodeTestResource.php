@@ -6,6 +6,7 @@ use App\Filament\Resources\PublicBarcodeTestResource\Pages;
 use App\Models\PublicBarcodeTest;
 use App\Models\Question;
 use BackedEnum;
+use Filament\Actions;
 use Filament\Forms;
 use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
@@ -157,8 +158,8 @@ class PublicBarcodeTestResource extends Resource
             ])
             ->defaultSort('created_at', 'desc')
             ->actions([
-                Tables\Actions\EditAction::make(),
-                Tables\Actions\DeleteAction::make(),
+                Actions\EditAction::make(),
+                Actions\DeleteAction::make(),
             ]);
     }
 

@@ -6,6 +6,7 @@ use App\Filament\Resources\B2BPackageResource\Pages;
 use App\Models\B2BPackage;
 use App\Models\Course;
 use BackedEnum;
+use Filament\Actions;
 use Filament\Forms;
 use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
@@ -97,8 +98,8 @@ class B2BPackageResource extends Resource
             ])
             ->defaultSort('created_at', 'desc')
             ->actions([
-                Tables\Actions\EditAction::make(),
-                Tables\Actions\DeleteAction::make(),
+                Actions\EditAction::make(),
+                Actions\DeleteAction::make(),
             ]);
     }
 
